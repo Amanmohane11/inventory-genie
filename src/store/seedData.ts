@@ -24,9 +24,13 @@ export type Bill = {
   type: "sales" | "purchase" | "estimate";
   date: string;        // ISO
   partyName: string;
+  partyPhone?: string;
+  partyEmail?: string;
   items: BillItem[];
   paymentMode?: "upi" | "card" | "cash";
   paid?: boolean;
+  notes?: string;
+  expiryDate?: string;  // for estimates
 };
 
 export type Expense = {

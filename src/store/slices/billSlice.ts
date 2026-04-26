@@ -8,12 +8,27 @@ const billSlice = createSlice({
   name: "bills",
   initialState,
   reducers: {
-    addBill: (s, a: PayloadAction<Bill>) => { s.bills.unshift(a.payload); },
+    addBill: (s, a: PayloadAction<Bill>) => {
+      s.bills.unshift(a.payload);
+    },
     deleteBill: (s, a: PayloadAction<string>) => {
-      s.bills = s.bills.filter(b => b.id !== a.payload);
+      s.bills = s.bills.filter((b) => b.id !== a.payload);
+    },
+    convertEstimateToSale: (
+      s,
+      a: PayloadAction<{ id: string; paymentMode: "upi" | "card" | "cash" }>,
+    ) => {
+      const b = s.bills.find((x) => x.id === a.payload.id);
+      if (!b || b.type !== "estimate") return;
+      b.type = "sales";
+      b.id = `s-${Date.now()}`;
+      b.date = new Date().toISOString();
+      b.paymentMode = a.payload.paymentMode;
+      b.paid = true;
+      b.expiryDate = undefined;
     },
   },
 });
 
-export const { addBill, deleteBill } = billSlice.actions;
+export const { addBill, deleteBill, convertEstimateToSale } = billSlice.actions;
 export default billSlice.reducer;
