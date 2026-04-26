@@ -8,7 +8,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { store, persistor } from "./store";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import Stub from "./pages/Stub.tsx";
+import Items from "./pages/Items.tsx";
+import Parties from "./pages/Parties.tsx";
+import BillForm from "./pages/BillForm.tsx";
+import BillsHistory from "./pages/BillsHistory.tsx";
+import DebitNote from "./pages/DebitNote.tsx";
+import Reports from "./pages/Reports.tsx";
+import Payroll from "./pages/Payroll.tsx";
+import Settings from "./pages/Settings.tsx";
 
 const queryClient = new QueryClient();
 
@@ -22,15 +29,15 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/parties" element={<Stub path="/parties" />} />
-              <Route path="/items" element={<Stub path="/items" />} />
-              <Route path="/bills/sales" element={<Stub path="/bills/sales" />} />
-              <Route path="/bills/purchase" element={<Stub path="/bills/purchase" />} />
-              <Route path="/bills/history" element={<Stub path="/bills/history" />} />
-              <Route path="/debit-note" element={<Stub path="/debit-note" />} />
-              <Route path="/reports" element={<Stub path="/reports" />} />
-              <Route path="/payroll" element={<Stub path="/payroll" />} />
-              <Route path="/settings" element={<Stub path="/settings" />} />
+              <Route path="/parties" element={<Parties />} />
+              <Route path="/items" element={<Items />} />
+              <Route path="/bills/sales" element={<BillForm type="sales" />} />
+              <Route path="/bills/purchase" element={<BillForm type="purchase" />} />
+              <Route path="/bills/history" element={<BillsHistory />} />
+              <Route path="/debit-note" element={<DebitNote />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/payroll" element={<Payroll />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
