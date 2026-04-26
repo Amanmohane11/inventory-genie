@@ -119,6 +119,157 @@ All colors MUST be HSL.
   }
 }
 
+/* =====================================================
+   POS / Bills bold theme (scoped via .pos-theme wrapper)
+   Black bg, red accent, yellow highlight, glass cards
+   ===================================================== */
+.pos-theme {
+  --pos-bg: 222 47% 7%;          /* #111827-ish */
+  --pos-surface: 222 39% 13%;    /* #1F2937 */
+  --pos-surface-2: 222 30% 18%;
+  --pos-border: 222 20% 24%;
+  --pos-text: 0 0% 98%;
+  --pos-muted: 220 9% 65%;
+  --pos-accent: 0 84% 60%;       /* red */
+  --pos-highlight: 48 96% 53%;   /* yellow */
+  --pos-success: 142 71% 45%;
+
+  background: hsl(var(--pos-bg));
+  color: hsl(var(--pos-text));
+}
+
+.pos-theme .pos-glass {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--pos-surface) / 0.85),
+    hsl(var(--pos-surface-2) / 0.65)
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid hsl(var(--pos-border) / 0.7);
+  border-radius: 1rem;
+  box-shadow:
+    0 10px 30px -12px hsl(0 0% 0% / 0.55),
+    inset 0 1px 0 hsl(0 0% 100% / 0.04);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.pos-theme .pos-glass:hover {
+  transform: translateY(-2px);
+  border-color: hsl(var(--pos-highlight) / 0.4);
+  box-shadow:
+    0 20px 40px -16px hsl(0 0% 0% / 0.7),
+    0 0 0 1px hsl(var(--pos-highlight) / 0.15),
+    inset 0 1px 0 hsl(0 0% 100% / 0.05);
+}
+
+.pos-theme .pos-input {
+  background: hsl(var(--pos-surface) / 0.6);
+  border: 1px solid hsl(var(--pos-border));
+  color: hsl(var(--pos-text));
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.pos-theme .pos-input::placeholder { color: hsl(var(--pos-muted)); }
+.pos-theme .pos-input:focus,
+.pos-theme .pos-input:focus-visible {
+  outline: none;
+  border-color: hsl(var(--pos-highlight));
+  box-shadow: 0 0 0 3px hsl(var(--pos-highlight) / 0.25);
+}
+
+.pos-theme .pos-btn-primary {
+  background: hsl(var(--pos-accent));
+  color: white;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+.pos-theme .pos-btn-primary:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 0 3px hsl(var(--pos-accent) / 0.35), 0 8px 24px -8px hsl(var(--pos-accent) / 0.6);
+  filter: brightness(1.05);
+}
+.pos-theme .pos-btn-primary:active { transform: scale(0.98); }
+
+.pos-theme .pos-btn-ghost {
+  background: hsl(var(--pos-surface) / 0.6);
+  color: hsl(var(--pos-text));
+  border: 1px solid hsl(var(--pos-border));
+  transition: all 0.18s ease;
+}
+.pos-theme .pos-btn-ghost:hover {
+  border-color: hsl(var(--pos-highlight) / 0.6);
+  color: hsl(var(--pos-highlight));
+}
+
+.pos-theme .pos-row {
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  animation: pos-row-fade 0.35s ease both;
+}
+.pos-theme .pos-row:hover {
+  background: hsl(var(--pos-highlight) / 0.06);
+  box-shadow: inset 0 0 0 1px hsl(var(--pos-highlight) / 0.4);
+}
+
+.pos-theme .pos-tab-indicator {
+  background: hsl(var(--pos-highlight));
+  height: 2px;
+  border-radius: 2px;
+  transition: transform 0.35s cubic-bezier(.5,1.4,.4,1), width 0.35s ease;
+  box-shadow: 0 0 12px hsl(var(--pos-highlight) / 0.7);
+}
+
+.pos-theme .pos-pay {
+  border: 1px solid hsl(var(--pos-border));
+  background: hsl(var(--pos-surface) / 0.5);
+  transition: all 0.2s ease;
+}
+.pos-theme .pos-pay:hover { border-color: hsl(var(--pos-highlight) / 0.5); }
+.pos-theme .pos-pay[data-active="true"] {
+  border-color: hsl(var(--pos-highlight));
+  background: hsl(var(--pos-highlight) / 0.12);
+  color: hsl(var(--pos-highlight));
+  box-shadow: 0 0 0 3px hsl(var(--pos-highlight) / 0.18), 0 0 18px hsl(var(--pos-highlight) / 0.35);
+}
+
+.pos-theme .pos-badge-yellow {
+  background: hsl(var(--pos-highlight) / 0.15);
+  color: hsl(var(--pos-highlight));
+  border: 1px solid hsl(var(--pos-highlight) / 0.35);
+}
+.pos-theme .pos-badge-red {
+  background: hsl(var(--pos-accent) / 0.15);
+  color: hsl(var(--pos-accent));
+  border: 1px solid hsl(var(--pos-accent) / 0.35);
+}
+
+.pos-theme .pos-fab {
+  background: hsl(var(--pos-highlight));
+  color: hsl(0 0% 8%);
+  box-shadow: 0 0 0 0 hsl(var(--pos-highlight) / 0.7);
+  animation: pos-pulse 2s ease-in-out infinite;
+  transition: transform 0.2s ease;
+}
+.pos-theme .pos-fab:hover { transform: scale(1.06); }
+
+@keyframes pos-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(48 96% 53% / 0.55); }
+  50%      { box-shadow: 0 0 0 12px hsl(48 96% 53% / 0); }
+}
+@keyframes pos-row-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pos-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.pos-shake { animation: pos-shake 0.4s ease; }
+
+@keyframes pos-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.pos-slide-up { animation: pos-slide-up 0.3s ease both; }
+
 @layer base {
   * {
     @apply border-border;
