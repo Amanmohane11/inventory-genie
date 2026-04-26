@@ -32,7 +32,6 @@ const App = () => (
               <Route path="/parties" element={<Parties />} />
               <Route path="/items" element={<Items />} />
               <Route path="/bills/sales" element={<BillForm type="sales" />} />
-              <Route path="/bills/estimate" element={<BillForm type="estimate" />} />
               <Route path="/bills/purchase" element={<BillForm type="purchase" />} />
               <Route path="/bills/history" element={<BillsHistory />} />
               <Route path="/debit-note" element={<DebitNote />} />
