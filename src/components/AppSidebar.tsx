@@ -21,6 +21,7 @@ const main = [
 
 const billChildren = [
   { title: "Sales Bill", url: "/bills/sales", icon: ShoppingCart },
+  { title: "Estimate", url: "/bills/estimate", icon: FileText },
   { title: "Purchase Bill", url: "/bills/purchase", icon: ShoppingBag },
   { title: "History", url: "/bills/history", icon: History },
 ];
