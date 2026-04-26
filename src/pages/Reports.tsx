@@ -36,10 +36,10 @@ export default function Reports() {
       />
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Total Sales" value={fmt(totals.totalSales)} icon={<TrendingUp className="h-4 w-4" />} accent="primary" />
-        <StatCard title="Total Purchase" value={fmt(totals.totalPurchase)} icon={<TrendingDown className="h-4 w-4" />} accent="secondary" />
-        <StatCard title="Expenses" value={fmt(totals.totalExpenses)} icon={<Receipt className="h-4 w-4" />} accent="destructive" />
-        <StatCard title="Net Profit" value={fmt(totals.netProfit)} icon={<Wallet className="h-4 w-4" />} accent={totals.netProfit >= 0 ? "success" : "destructive"} />
+        <StatCard label="Total Sales" value={fmt(totals.totalSales)} icon={<TrendingUp className="h-4 w-4" />} accent="primary" />
+        <StatCard label="Total Purchase" value={fmt(totals.totalPurchase)} icon={<TrendingDown className="h-4 w-4" />} accent="secondary" />
+        <StatCard label="Expenses" value={fmt(totals.totalExpenses)} icon={<Receipt className="h-4 w-4" />} accent="destructive" />
+        <StatCard label="Net Profit" value={fmt(totals.netProfit)} icon={<Wallet className="h-4 w-4" />} accent={totals.netProfit >= 0 ? "success" : "destructive"} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
