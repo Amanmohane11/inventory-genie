@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Home, Users, Package, Receipt, FileMinus, BarChart3, UserCog, Settings,
-  ChevronDown, ShoppingCart, ShoppingBag, History,
+  ChevronDown, ShoppingCart, ShoppingBag, History, FileText,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -21,6 +21,7 @@ const main = [
 
 const billChildren = [
   { title: "Sales Bill", url: "/bills/sales", icon: ShoppingCart },
+  { title: "Estimate", url: "/bills/estimate", icon: FileText },
   { title: "Purchase Bill", url: "/bills/purchase", icon: ShoppingBag },
   { title: "History", url: "/bills/history", icon: History },
 ];

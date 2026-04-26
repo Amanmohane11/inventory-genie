@@ -12,19 +12,34 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { Search, Trash2, Eye, Receipt } from "lucide-react";
+import { Search, Trash2, Eye, Receipt, ArrowRightLeft } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { deleteBill } from "@/store/slices/billSlice";
+import { deleteBill, convertEstimateToSale } from "@/store/slices/billSlice";
+import { adjustStock } from "@/store/slices/itemSlice";
 import { Bill } from "@/store/seedData";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
 export default function BillsHistory() {
   const bills = useAppSelector((s) => s.bills.bills);
+  const items = useAppSelector((s) => s.items.items);
   const dispatch = useAppDispatch();
-  const [tab, setTab] = useState<"all" | "sales" | "purchase">("all");
+  const [tab, setTab] = useState<"all" | "sales" | "purchase" | "estimate">("all");
   const [q, setQ] = useState("");
   const [view, setView] = useState<Bill | null>(null);
+
+  const handleConvert = (b: Bill) => {
+    for (const l of b.items) {
+      const it = items.find((x) => x.id === l.itemId);
+      if (it && l.qty > it.stock) {
+        toast.error(`${it.name}: only ${it.stock} in stock`);
+        return;
+      }
+    }
+    dispatch(convertEstimateToSale({ id: b.id, paymentMode: "upi" }));
+    for (const l of b.items) dispatch(adjustStock({ id: l.itemId, delta: -l.qty }));
+    toast.success("Estimate converted to sale");
+  };
 
   const filtered = useMemo(() => {
     let list = bills;
@@ -50,6 +65,7 @@ export default function BillsHistory() {
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="sales">Sales</TabsTrigger>
+              <TabsTrigger value="estimate">Estimate</TabsTrigger>
               <TabsTrigger value="purchase">Purchase</TabsTrigger>
             </TabsList>
           </Tabs>
@@ -91,7 +107,10 @@ export default function BillsHistory() {
                   <TableCell className="font-mono text-xs">{b.id}</TableCell>
                   <TableCell>{format(new Date(b.date), "dd MMM yy")}</TableCell>
                   <TableCell>
-                    <Badge variant={b.type === "sales" ? "default" : "secondary"} className="capitalize">
+                    <Badge
+                      variant={b.type === "sales" ? "default" : b.type === "estimate" ? "outline" : "secondary"}
+                      className={`capitalize ${b.type === "estimate" ? "border-warning text-warning" : ""}`}
+                    >
                       {b.type}
                     </Badge>
                   </TableCell>
@@ -105,11 +124,21 @@ export default function BillsHistory() {
                       ) : (
                         <Badge variant="destructive">Unpaid</Badge>
                       )
+                    ) : b.type === "estimate" ? (
+                      <Badge variant="outline" className="border-warning text-warning">Estimate</Badge>
                     ) : (
                       <Badge variant="outline">—</Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
+                    {b.type === "estimate" && (
+                      <Button
+                        variant="ghost" size="icon" title="Convert to sale"
+                        onClick={() => handleConvert(b)}
+                      >
+                        <ArrowRightLeft className="h-4 w-4 text-success" />
+                      </Button>
+                    )}
                     <Button variant="ghost" size="icon" onClick={() => setView(b)}>
                       <Eye className="h-4 w-4" />
                     </Button>
