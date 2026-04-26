@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 20% 98%;
+    --background: 0 0% 100%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -17,37 +17,40 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 239 84% 59%;
+    /* Primary = Green */
+    --primary: 142 71% 38%;
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 239 84% 96%;
+    --primary-soft: 142 71% 94%;
 
-    --secondary: 189 94% 43%;
-    --secondary-foreground: 0 0% 100%;
-    --secondary-soft: 189 94% 94%;
+    /* Secondary = Yellow */
+    --secondary: 45 93% 47%;
+    --secondary-foreground: 0 0% 12%;
+    --secondary-soft: 45 93% 94%;
 
-    --success: 142 71% 45%;
+    --success: 142 71% 38%;
     --success-foreground: 0 0% 100%;
     --success-soft: 142 71% 94%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 45 93% 47%;
+    --warning-foreground: 0 0% 12%;
 
     --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted-foreground: 220 9% 40%;
 
-    --accent: 239 84% 96%;
-    --accent-foreground: 239 84% 40%;
+    --accent: 142 71% 94%;
+    --accent-foreground: 142 71% 28%;
 
-    --destructive: 0 84% 60%;
+    /* Destructive = Red */
+    --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 100%;
     --destructive-soft: 0 84% 96%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 239 84% 59%;
+    --ring: 142 71% 38%;
 
     --shadow-card: 0 1px 3px 0 hsl(220 13% 60% / 0.08), 0 1px 2px -1px hsl(220 13% 60% / 0.06);
-    --shadow-elevated: 0 10px 25px -5px hsl(239 84% 59% / 0.1), 0 8px 10px -6px hsl(239 84% 59% / 0.05);
+    --shadow-elevated: 0 10px 25px -5px hsl(142 71% 38% / 0.12), 0 8px 10px -6px hsl(142 71% 38% / 0.06);
 
     --radius: 0.5rem;
 
