@@ -1,10 +1,10 @@
-import { AppLayout } from "@/components/AppLayout";
-import Home from "./Home";
+import { MuiLayout } from "@/components/MuiLayout";
+import MuiDashboard from "./MuiDashboard";
 
 const Index = () => (
-  <AppLayout>
-    <Home />
-  </AppLayout>
+  <MuiLayout>
+    <MuiDashboard />
+  </MuiLayout>
 );
 
 export default Index;
