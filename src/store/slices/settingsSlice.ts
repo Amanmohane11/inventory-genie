@@ -10,6 +10,7 @@ export type Settings = {
   defaultGst: number;
   invoicePrefix: string;
   currency: string;
+  businessRegisterId: string;
 };
 
 const initialState: Settings = {
@@ -22,6 +23,7 @@ const initialState: Settings = {
   defaultGst: 18,
   invoicePrefix: "INV",
   currency: "INR",
+  businessRegisterId: "BRN-2026-00451",
 };
 
 const slice = createSlice({
