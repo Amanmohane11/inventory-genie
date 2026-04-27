@@ -25,14 +25,14 @@ export default function MuiDashboard() {
 
   return (
     <Stack spacing={3}>
-      <Box display="flex" alignItems={{ xs: "flex-start", md: "center" }} flexDirection={{ xs: "column", md: "row" }} gap={2} justifyContent="space-between">
+      <Box sx={{ display: "flex", alignItems: { xs: "flex-start", md: "center" }, flexDirection: { xs: "column", md: "row" }, gap: 2, justifyContent: "space-between" }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>Dashboard</Typography>
           <Typography variant="body2" color="text.secondary">
             Overview of your business performance.
           </Typography>
         </Box>
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
           <Chip
             color="primary"
             variant="filled"
@@ -53,7 +53,7 @@ export default function MuiDashboard() {
         </Stack>
       </Box>
 
-      <Box display="grid" gap={2} gridTemplateColumns={{ xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }}>
+      <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" } }}>
         <StatCard label="Total Sales" value={fmt(totals.totalSales)} icon={<ShoppingCart />} trend="+12.4%" up />
         <StatCard label="Total Purchase" value={fmt(totals.totalPurchase)} icon={<ShoppingBag />} trend="-4.1%" />
         <StatCard label="Net Profit" value={fmt(totals.netProfit)} icon={<TrendingUp />} trend="+8.2%" up={totals.netProfit >= 0} />
@@ -62,7 +62,7 @@ export default function MuiDashboard() {
 
       <Card>
         <CardContent>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+          <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1 }}>
             <Box>
               <Typography variant="h6">Sales & Profit</Typography>
               <Typography variant="caption" color="text.secondary">
@@ -86,7 +86,7 @@ export default function MuiDashboard() {
         </CardContent>
       </Card>
 
-      <Box display="grid" gap={2} gridTemplateColumns={{ xs: "1fr", lg: "1fr 1fr" }}>
+      <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" } }}>
         <InsightCard title="Top Selling" rows={top} positive emptyHint="No sales in this range" />
         <InsightCard title="Low Selling" rows={low} positive={false} emptyHint="No items" />
       </Box>
@@ -100,9 +100,9 @@ function StatCard({
   return (
     <Card>
       <CardContent>
-        <Stack direction="row" alignItems="center" spacing={2}>
+        <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
           <Avatar sx={{ bgcolor: "primary.main", width: 44, height: 44 }}>{icon}</Avatar>
-          <Box flex={1} minWidth={0}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="caption" color="text.secondary">{label}</Typography>
             <Typography variant="h6" sx={{ fontWeight: 700 }} noWrap>{value}</Typography>
           </Box>
@@ -132,7 +132,7 @@ function InsightCard({
   return (
     <Card>
       <CardContent>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+        <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1 }}>
           <Typography variant="h6">{title}</Typography>
           <Typography variant="caption" color="text.secondary">Top 5</Typography>
         </Stack>
@@ -154,7 +154,7 @@ function InsightCard({
                 <ListItemText
                   primary={r.name}
                   secondary={`${r.category} · Stock ${r.stock}`}
-                  slotProps={{ primary: { fontWeight: 600, fontSize: 14 } }}
+                  slotProps={{ primary: { sx: { fontWeight: 600, fontSize: 14 } } }}
                 />
               </ListItem>
             ))}

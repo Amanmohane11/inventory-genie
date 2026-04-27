@@ -70,7 +70,7 @@ export function MuiLayout({ children }: { children: ReactNode }) {
 
         <ListItemButton onClick={() => setBillsOpen((v) => !v)} sx={navBtnSx(billsActive)}>
           <ListItemIcon sx={{ minWidth: 36, color: "inherit" }}><ReceiptLong /></ListItemIcon>
-          <ListItemText primary="Bills" slotProps={{ primary: { fontSize: 14, fontWeight: 600 } }} />
+          <ListItemText primary="Bills" slotProps={{ primary: { sx: { fontSize: 14, fontWeight: 600 } } }} />
           {billsOpen ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
         <Collapse in={billsOpen} unmountOnExit>
@@ -183,7 +183,7 @@ function NavItem({
       sx={navBtnSx(active, dense)}
     >
       <ListItemIcon sx={{ minWidth: 36, color: "inherit" }}>{icon}</ListItemIcon>
-      <ListItemText primary={label} slotProps={{ primary: { fontSize: dense ? 13 : 14, fontWeight: active ? 700 : 500 } }} />
+      <ListItemText primary={label} slotProps={{ primary: { sx: { fontSize: dense ? 13 : 14, fontWeight: active ? 700 : 500 } } }} />
     </ListItemButton>
   );
 }
