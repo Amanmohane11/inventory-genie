@@ -1,22 +1,15 @@
 import { useMemo, useState } from "react";
-import { AppLayout } from "@/components/AppLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Plus, Pencil, Trash2, Search, Package } from "lucide-react";
+  Box, Button, Card, Chip, IconButton, InputAdornment, Stack, Table, TableBody,
+  TableCell, TableContainer, TableHead, TableRow, TextField, Typography, Dialog,
+  DialogTitle, DialogContent, DialogActions, Grid,
+} from "@mui/material";
+import { Add, Edit, Delete, Search, Inventory2 } from "@mui/icons-material";
+import { MuiLayout } from "@/components/MuiLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addItem, updateItem, deleteItem } from "@/store/slices/itemSlice";
 import { Item } from "@/store/seedData";
-import { toast } from "sonner";
+import { useNotify } from "@/components/NotifyProvider";
 
 const empty: Item = {
   id: "", name: "", code: "", category: "", stock: 0, costPrice: 0, salePrice: 0,
@@ -25,6 +18,7 @@ const empty: Item = {
 export default function Items() {
   const items = useAppSelector((s) => s.items.items);
   const dispatch = useAppDispatch();
+  const notify = useNotify();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Item>(empty);
@@ -37,153 +31,133 @@ export default function Items() {
       (i) =>
         i.name.toLowerCase().includes(t) ||
         i.code.toLowerCase().includes(t) ||
-        i.category.toLowerCase().includes(t)
+        i.category.toLowerCase().includes(t),
     );
   }, [items, q]);
 
   const lowStock = items.filter((i) => i.stock < 25).length;
 
   const onSave = () => {
-    if (!draft.name || !draft.code) {
-      toast.error("Name and code are required");
-      return;
-    }
+    if (!draft.name || !draft.code) return notify("Name and code are required", "error");
     if (editing) {
       dispatch(updateItem(draft));
-      toast.success("Item updated");
+      notify("Item updated", "success");
     } else {
       dispatch(addItem({ ...draft, id: `i-${Date.now()}` }));
-      toast.success("Item added");
+      notify("Item added", "success");
     }
     setOpen(false);
     setDraft(empty);
   };
 
-  const onEdit = (i: Item) => {
-    setDraft(i);
-    setOpen(true);
-  };
-
-  const onDelete = (id: string) => {
-    dispatch(deleteItem(id));
-    toast.success("Item deleted");
-  };
-
   return (
-    <AppLayout>
-      <PageHeader
-        title="Items"
-        description={`${items.length} items · ${lowStock} low stock`}
-        actions={
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setDraft(empty); }}>
-            <DialogTrigger asChild>
-              <Button onClick={() => setDraft(empty)}>
-                <Plus className="h-4 w-4" /> Add Item
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editing ? "Edit Item" : "Add Item"}</DialogTitle>
-              </DialogHeader>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Name">
-                  <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-                </Field>
-                <Field label="Code">
-                  <Input value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value })} />
-                </Field>
-                <Field label="Category">
-                  <Input value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
-                </Field>
-                <Field label="Stock">
-                  <Input type="number" value={draft.stock} onChange={(e) => setDraft({ ...draft, stock: +e.target.value })} />
-                </Field>
-                <Field label="Cost Price">
-                  <Input type="number" value={draft.costPrice} onChange={(e) => setDraft({ ...draft, costPrice: +e.target.value })} />
-                </Field>
-                <Field label="Sale Price">
-                  <Input type="number" value={draft.salePrice} onChange={(e) => setDraft({ ...draft, salePrice: +e.target.value })} />
-                </Field>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button onClick={onSave}>{editing ? "Save" : "Add"}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        }
-      />
+    <MuiLayout>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, mb: 3 }}
+      >
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>Items</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {items.length} items · {lowStock} low stock
+          </Typography>
+        </Box>
+        <Button variant="contained" startIcon={<Add />} onClick={() => { setDraft(empty); setOpen(true); }}>
+          Add Item
+        </Button>
+      </Stack>
 
-      <Card className="p-4 card-elevated">
-        <div className="flex items-center gap-2 mb-4">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, code or category"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            className="max-w-sm"
-          />
-        </div>
-
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
+      <Card sx={{ p: 2 }}>
+        <TextField
+          placeholder="Search by name, code or category"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          sx={{ maxWidth: 360, mb: 2 }}
+          slotProps={{
+            input: {
+              startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment>,
+            },
+          }}
+        />
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
               <TableRow>
-                <TableHead>Item</TableHead>
-                <TableHead>Code</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Stock</TableHead>
-                <TableHead className="text-right">Cost</TableHead>
-                <TableHead className="text-right">Price</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableCell>Item</TableCell>
+                <TableCell>Code</TableCell>
+                <TableCell>Category</TableCell>
+                <TableCell align="right">Stock</TableCell>
+                <TableCell align="right">Cost</TableCell>
+                <TableCell align="right">Price</TableCell>
+                <TableCell align="right">Actions</TableCell>
               </TableRow>
-            </TableHeader>
+            </TableHead>
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                    <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <TableCell colSpan={7} align="center" sx={{ py: 6, color: "text.secondary" }}>
+                    <Inventory2 sx={{ fontSize: 36, opacity: 0.4, display: "block", mx: "auto", mb: 1 }} />
                     No items found
                   </TableCell>
                 </TableRow>
               )}
               {filtered.map((i) => (
-                <TableRow key={i.id}>
-                  <TableCell className="font-medium">{i.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{i.code}</TableCell>
+                <TableRow key={i.id} hover>
+                  <TableCell sx={{ fontWeight: 600 }}>{i.name}</TableCell>
+                  <TableCell sx={{ color: "text.secondary" }}>{i.code}</TableCell>
                   <TableCell>{i.category}</TableCell>
-                  <TableCell className="text-right">
-                    {i.stock < 25 ? (
-                      <Badge variant="destructive">{i.stock}</Badge>
-                    ) : (
-                      <span>{i.stock}</span>
-                    )}
+                  <TableCell align="right">
+                    {i.stock < 25
+                      ? <Chip size="small" color="error" label={i.stock} />
+                      : <span>{i.stock}</span>}
                   </TableCell>
-                  <TableCell className="text-right">₹{i.costPrice}</TableCell>
-                  <TableCell className="text-right font-medium">₹{i.salePrice}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(i)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(i.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                  <TableCell align="right">₹{i.costPrice}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600 }}>₹{i.salePrice}</TableCell>
+                  <TableCell align="right">
+                    <IconButton size="small" onClick={() => { setDraft(i); setOpen(true); }}>
+                      <Edit fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" color="error" onClick={() => { dispatch(deleteItem(i.id)); notify("Item deleted", "info"); }}>
+                      <Delete fontSize="small" />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </div>
+        </TableContainer>
       </Card>
-    </AppLayout>
-  );
-}
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs">{label}</Label>
-      {children}
-    </div>
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>{editing ? "Edit Item" : "Add Item"}</DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField fullWidth label="Name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField fullWidth label="Code" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField fullWidth label="Category" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField fullWidth type="number" label="Stock" value={draft.stock} onChange={(e) => setDraft({ ...draft, stock: +e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField fullWidth type="number" label="Cost Price" value={draft.costPrice} onChange={(e) => setDraft({ ...draft, costPrice: +e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField fullWidth type="number" label="Sale Price" value={draft.salePrice} onChange={(e) => setDraft({ ...draft, salePrice: +e.target.value })} />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={onSave}>{editing ? "Save" : "Add"}</Button>
+        </DialogActions>
+      </Dialog>
+    </MuiLayout>
   );
 }

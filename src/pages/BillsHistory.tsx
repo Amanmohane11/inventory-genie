@@ -1,44 +1,40 @@
-import { useMemo, useState } from "react";
-import { AppLayout } from "@/components/AppLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMemo, useState, SyntheticEvent } from "react";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
+  Box, Button, Card, Chip, Dialog, DialogActions, DialogContent, DialogTitle,
+  IconButton, InputAdornment, Stack, Tab, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, Tabs, TextField, Tooltip, Typography,
+} from "@mui/material";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
-import { Search, Trash2, Eye, Receipt, ArrowRightLeft } from "lucide-react";
+  Search, Delete, Visibility, Receipt, SwapHoriz,
+} from "@mui/icons-material";
+import { MuiLayout } from "@/components/MuiLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { deleteBill, convertEstimateToSale } from "@/store/slices/billSlice";
 import { adjustStock } from "@/store/slices/itemSlice";
 import { Bill } from "@/store/seedData";
 import { format } from "date-fns";
-import { toast } from "sonner";
+import { useNotify } from "@/components/NotifyProvider";
+
+const tabs = ["all", "sales", "estimate", "purchase"] as const;
+type TabKey = typeof tabs[number];
 
 export default function BillsHistory() {
   const bills = useAppSelector((s) => s.bills.bills);
   const items = useAppSelector((s) => s.items.items);
   const dispatch = useAppDispatch();
-  const [tab, setTab] = useState<"all" | "sales" | "purchase" | "estimate">("all");
+  const notify = useNotify();
+  const [tab, setTab] = useState<TabKey>("all");
   const [q, setQ] = useState("");
   const [view, setView] = useState<Bill | null>(null);
 
   const handleConvert = (b: Bill) => {
     for (const l of b.items) {
       const it = items.find((x) => x.id === l.itemId);
-      if (it && l.qty > it.stock) {
-        toast.error(`${it.name}: only ${it.stock} in stock`);
-        return;
-      }
+      if (it && l.qty > it.stock) return notify(`${it.name}: only ${it.stock} in stock`, "error");
     }
     dispatch(convertEstimateToSale({ id: b.id, paymentMode: "upi" }));
     for (const l of b.items) dispatch(adjustStock({ id: l.itemId, delta: -l.qty }));
-    toast.success("Estimate converted to sale");
+    notify("Estimate converted to sale", "success");
   };
 
   const filtered = useMemo(() => {
@@ -56,127 +52,123 @@ export default function BillsHistory() {
     }, 0);
 
   return (
-    <AppLayout>
-      <PageHeader title="Bill History" description={`${bills.length} bills total`} />
+    <MuiLayout>
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={2}
+        sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, mb: 2 }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>Bill History</Typography>
+          <Typography variant="body2" color="text.secondary">{bills.length} bills total</Typography>
+        </Box>
+        <TextField
+          size="small" placeholder="Search party or ID"
+          value={q} onChange={(e) => setQ(e.target.value)}
+          slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
+          sx={{ width: { xs: "100%", sm: 280 } }}
+        />
+      </Stack>
 
-      <Card className="p-4 card-elevated">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-            <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="sales">Sales</TabsTrigger>
-              <TabsTrigger value="estimate">Estimate</TabsTrigger>
-              <TabsTrigger value="purchase">Purchase</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <div className="flex items-center gap-2 border rounded-md px-2 bg-card">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search party or ID"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              className="border-0 shadow-none focus-visible:ring-0 px-0 w-56"
-            />
-          </div>
-        </div>
+      <Card>
+        <Tabs value={tab} onChange={(_e: SyntheticEvent, v: TabKey) => setTab(v)} sx={{ px: 2, borderBottom: 1, borderColor: "divider" }}>
+          <Tab value="all" label="All" />
+          <Tab value="sales" label="Sales" />
+          <Tab value="estimate" label="Estimate" />
+          <Tab value="purchase" label="Purchase" />
+        </Tabs>
 
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
               <TableRow>
-                <TableHead>Bill #</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Party</TableHead>
-                <TableHead className="text-right">Items</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableCell>Bill #</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Party</TableCell>
+                <TableCell align="right">Items</TableCell>
+                <TableCell align="right">Total</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell align="right">Actions</TableCell>
               </TableRow>
-            </TableHeader>
+            </TableHead>
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                    <Receipt className="h-8 w-8 mx-auto mb-2 opacity-50" /> No bills
+                  <TableCell colSpan={8} align="center" sx={{ py: 6, color: "text.secondary" }}>
+                    <Receipt sx={{ fontSize: 36, opacity: 0.4, display: "block", mx: "auto", mb: 1 }} />
+                    No bills
                   </TableCell>
                 </TableRow>
               )}
               {filtered.map((b) => (
-                <TableRow key={b.id}>
-                  <TableCell className="font-mono text-xs">{b.id}</TableCell>
+                <TableRow key={b.id} hover>
+                  <TableCell sx={{ fontFamily: "monospace", fontSize: 12 }}>{b.id}</TableCell>
                   <TableCell>{format(new Date(b.date), "dd MMM yy")}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={b.type === "sales" ? "default" : b.type === "estimate" ? "outline" : "secondary"}
-                      className={`capitalize ${b.type === "estimate" ? "border-warning text-warning" : ""}`}
-                    >
-                      {b.type}
-                    </Badge>
+                    <Chip
+                      size="small"
+                      label={b.type}
+                      color={b.type === "sales" ? "primary" : b.type === "estimate" ? "warning" : "default"}
+                      variant={b.type === "purchase" ? "outlined" : "filled"}
+                      sx={{ textTransform: "capitalize" }}
+                    />
                   </TableCell>
                   <TableCell>{b.partyName}</TableCell>
-                  <TableCell className="text-right">{b.items.length}</TableCell>
-                  <TableCell className="text-right font-medium">₹{total(b).toFixed(2)}</TableCell>
+                  <TableCell align="right">{b.items.length}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600 }}>₹{total(b).toFixed(2)}</TableCell>
                   <TableCell>
-                    {b.type === "sales" ? (
-                      b.paid ? (
-                        <Badge className="bg-success text-success-foreground hover:bg-success/90">Paid</Badge>
-                      ) : (
-                        <Badge variant="destructive">Unpaid</Badge>
-                      )
-                    ) : b.type === "estimate" ? (
-                      <Badge variant="outline" className="border-warning text-warning">Estimate</Badge>
-                    ) : (
-                      <Badge variant="outline">—</Badge>
-                    )}
+                    {b.type === "sales"
+                      ? <Chip size="small" color={b.paid ? "success" : "error"} label={b.paid ? "Paid" : "Unpaid"} />
+                      : b.type === "estimate"
+                        ? <Chip size="small" color="warning" variant="outlined" label="Estimate" />
+                        : <Chip size="small" variant="outlined" label="—" />}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell align="right">
                     {b.type === "estimate" && (
-                      <Button
-                        variant="ghost" size="icon" title="Convert to sale"
-                        onClick={() => handleConvert(b)}
-                      >
-                        <ArrowRightLeft className="h-4 w-4 text-success" />
-                      </Button>
+                      <Tooltip title="Convert to sale">
+                        <IconButton size="small" color="success" onClick={() => handleConvert(b)}>
+                          <SwapHoriz fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     )}
-                    <Button variant="ghost" size="icon" onClick={() => setView(b)}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost" size="icon"
-                      onClick={() => { dispatch(deleteBill(b.id)); toast.success("Bill deleted"); }}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    <Tooltip title="View">
+                      <IconButton size="small" onClick={() => setView(b)}>
+                        <Visibility fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <IconButton size="small" color="error"
+                        onClick={() => { dispatch(deleteBill(b.id)); notify("Bill deleted", "info"); }}>
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </div>
+        </TableContainer>
       </Card>
 
-      <Dialog open={!!view} onOpenChange={(o) => !o && setView(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Bill {view?.id}</DialogTitle></DialogHeader>
+      <Dialog open={!!view} onClose={() => setView(null)} fullWidth maxWidth="md">
+        <DialogTitle>Bill {view?.id}</DialogTitle>
+        <DialogContent dividers>
           {view && (
-            <div>
-              <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-                <div><span className="text-muted-foreground">Party:</span> {view.partyName}</div>
-                <div><span className="text-muted-foreground">Date:</span> {format(new Date(view.date), "PPP")}</div>
-                <div><span className="text-muted-foreground">Type:</span> {view.type}</div>
-                {view.paymentMode && <div><span className="text-muted-foreground">Payment:</span> {view.paymentMode}</div>}
-              </div>
-              <Table>
-                <TableHeader>
+            <>
+              <Stack direction="row" spacing={3} sx={{ mb: 2, flexWrap: "wrap" }}>
+                <Info label="Party" value={view.partyName} />
+                <Info label="Date" value={format(new Date(view.date), "PPP")} />
+                <Info label="Type" value={view.type} />
+                {view.paymentMode && <Info label="Payment" value={view.paymentMode} />}
+              </Stack>
+              <Table size="small">
+                <TableHead>
                   <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Price</TableHead>
-                    <TableHead className="text-right">GST</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
+                    <TableCell>Item</TableCell>
+                    <TableCell align="right">Qty</TableCell>
+                    <TableCell align="right">Price</TableCell>
+                    <TableCell align="right">GST</TableCell>
+                    <TableCell align="right">Total</TableCell>
                   </TableRow>
-                </TableHeader>
+                </TableHead>
                 <TableBody>
                   {view.items.map((l, i) => {
                     const sub = l.price * l.qty - l.discount;
@@ -184,22 +176,34 @@ export default function BillsHistory() {
                     return (
                       <TableRow key={i}>
                         <TableCell>{l.name}</TableCell>
-                        <TableCell className="text-right">{l.qty}</TableCell>
-                        <TableCell className="text-right">₹{l.price}</TableCell>
-                        <TableCell className="text-right">{l.gstRate}%</TableCell>
-                        <TableCell className="text-right font-medium">₹{tot.toFixed(2)}</TableCell>
+                        <TableCell align="right">{l.qty}</TableCell>
+                        <TableCell align="right">₹{l.price}</TableCell>
+                        <TableCell align="right">{l.gstRate}%</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>₹{tot.toFixed(2)}</TableCell>
                       </TableRow>
                     );
                   })}
                 </TableBody>
               </Table>
-              <div className="text-right mt-3 font-semibold text-lg">
+              <Typography variant="h6" sx={{ textAlign: "right", mt: 2 }}>
                 Total: ₹{total(view).toFixed(2)}
-              </div>
-            </div>
+              </Typography>
+            </>
           )}
         </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setView(null)}>Close</Button>
+        </DialogActions>
       </Dialog>
-    </AppLayout>
+    </MuiLayout>
+  );
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <Box>
+      <Typography variant="caption" color="text.secondary">{label}</Typography>
+      <Typography variant="body2" sx={{ fontWeight: 600, textTransform: "capitalize" }}>{value}</Typography>
+    </Box>
   );
 }

@@ -1,27 +1,19 @@
 import { useState } from "react";
-import { AppLayout } from "@/components/AppLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import { Plus, Trash2, FileMinus } from "lucide-react";
+  Box, Button, Card, Dialog, DialogActions, DialogContent, DialogTitle,
+  Grid, IconButton, MenuItem, Stack, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, TextField, Typography,
+} from "@mui/material";
+import { Add, Delete, RemoveCircleOutlined } from "@mui/icons-material";
+import { format } from "date-fns";
+import { MuiLayout } from "@/components/MuiLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addNote, deleteNote, DebitNote } from "@/store/slices/debitNoteSlice";
-import { format } from "date-fns";
-import { toast } from "sonner";
+import { useNotify } from "@/components/NotifyProvider";
 
 const blank: DebitNote = {
-  id: "", date: new Date().toISOString(), dealerName: "", itemName: "", qty: 1, amount: 0, reason: "",
+  id: "", date: new Date().toISOString(), dealerName: "", itemName: "",
+  qty: 1, amount: 0, reason: "",
 };
 
 export default function DebitNotePage() {
@@ -29,110 +21,106 @@ export default function DebitNotePage() {
   const items = useAppSelector((s) => s.items.items);
   const dealers = useAppSelector((s) => s.parties.dealers);
   const dispatch = useAppDispatch();
+  const notify = useNotify();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<DebitNote>(blank);
 
   const save = () => {
-    if (!draft.dealerName || !draft.itemName) return toast.error("Dealer and item required");
+    if (!draft.dealerName || !draft.itemName) return notify("Dealer and item required", "error");
     dispatch(addNote({ ...draft, id: `dn-${Date.now()}`, date: new Date().toISOString() }));
-    toast.success("Debit note created");
+    notify("Debit note created", "success");
     setOpen(false); setDraft(blank);
   };
 
   return (
-    <AppLayout>
-      <PageHeader
-        title="Debit Notes"
-        description="Record purchase returns to dealers"
-        actions={
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setDraft(blank); }}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4" /> New Debit Note</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>New Debit Note</DialogTitle></DialogHeader>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Dealer">
-                  <Select value={draft.dealerName} onValueChange={(v) => setDraft({ ...draft, dealerName: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select dealer" /></SelectTrigger>
-                    <SelectContent>
-                      {dealers.map((d) => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </Field>
-                <Field label="Item">
-                  <Select value={draft.itemName} onValueChange={(v) => setDraft({ ...draft, itemName: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select item" /></SelectTrigger>
-                    <SelectContent>
-                      {items.map((i) => <SelectItem key={i.id} value={i.name}>{i.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </Field>
-                <Field label="Qty"><Input type="number" value={draft.qty} onChange={(e) => setDraft({ ...draft, qty: +e.target.value })} /></Field>
-                <Field label="Amount"><Input type="number" value={draft.amount} onChange={(e) => setDraft({ ...draft, amount: +e.target.value })} /></Field>
-                <div className="col-span-2">
-                  <Field label="Reason"><Input value={draft.reason} onChange={(e) => setDraft({ ...draft, reason: e.target.value })} /></Field>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button onClick={save}>Create</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        }
-      />
+    <MuiLayout>
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={2}
+        sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, mb: 3 }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>Debit Notes</Typography>
+          <Typography variant="body2" color="text.secondary">Record purchase returns to dealers</Typography>
+        </Box>
+        <Button variant="contained" startIcon={<Add />} onClick={() => { setDraft(blank); setOpen(true); }}>
+          New Debit Note
+        </Button>
+      </Stack>
 
-      <Card className="p-4 card-elevated">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
+      <Card>
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Dealer</TableHead>
-                <TableHead>Item</TableHead>
-                <TableHead className="text-right">Qty</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableCell>Date</TableCell>
+                <TableCell>Dealer</TableCell>
+                <TableCell>Item</TableCell>
+                <TableCell align="right">Qty</TableCell>
+                <TableCell align="right">Amount</TableCell>
+                <TableCell>Reason</TableCell>
+                <TableCell align="right">Actions</TableCell>
               </TableRow>
-            </TableHeader>
+            </TableHead>
             <TableBody>
               {notes.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                    <FileMinus className="h-8 w-8 mx-auto mb-2 opacity-50" /> No debit notes yet
+                  <TableCell colSpan={7} align="center" sx={{ py: 6, color: "text.secondary" }}>
+                    <RemoveCircleOutlined sx={{ fontSize: 36, opacity: 0.4, display: "block", mx: "auto", mb: 1 }} />
+                    No debit notes yet
                   </TableCell>
                 </TableRow>
               )}
               {notes.map((n) => (
-                <TableRow key={n.id}>
+                <TableRow key={n.id} hover>
                   <TableCell>{format(new Date(n.date), "dd MMM yy")}</TableCell>
                   <TableCell>{n.dealerName}</TableCell>
                   <TableCell>{n.itemName}</TableCell>
-                  <TableCell className="text-right">{n.qty}</TableCell>
-                  <TableCell className="text-right font-medium">₹{n.amount}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{n.reason}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => { dispatch(deleteNote(n.id)); toast.success("Deleted"); }}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                  <TableCell align="right">{n.qty}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600 }}>₹{n.amount}</TableCell>
+                  <TableCell sx={{ color: "text.secondary" }}>{n.reason}</TableCell>
+                  <TableCell align="right">
+                    <IconButton size="small" color="error" onClick={() => { dispatch(deleteNote(n.id)); notify("Deleted", "info"); }}>
+                      <Delete fontSize="small" />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </div>
+        </TableContainer>
       </Card>
-    </AppLayout>
-  );
-}
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs">{label}</Label>
-      {children}
-    </div>
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>New Debit Note</DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField select fullWidth label="Dealer" value={draft.dealerName}
+                onChange={(e) => setDraft({ ...draft, dealerName: e.target.value })}>
+                {dealers.length === 0 && <MenuItem disabled value="">No dealers</MenuItem>}
+                {dealers.map((d) => <MenuItem key={d.id} value={d.name}>{d.name}</MenuItem>)}
+              </TextField>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField select fullWidth label="Item" value={draft.itemName}
+                onChange={(e) => setDraft({ ...draft, itemName: e.target.value })}>
+                {items.map((i) => <MenuItem key={i.id} value={i.name}>{i.name}</MenuItem>)}
+              </TextField>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField fullWidth type="number" label="Qty" value={draft.qty} onChange={(e) => setDraft({ ...draft, qty: +e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField fullWidth type="number" label="Amount" value={draft.amount} onChange={(e) => setDraft({ ...draft, amount: +e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField fullWidth label="Reason" value={draft.reason} onChange={(e) => setDraft({ ...draft, reason: e.target.value })} />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={save}>Create</Button>
+        </DialogActions>
+      </Dialog>
+    </MuiLayout>
   );
 }
