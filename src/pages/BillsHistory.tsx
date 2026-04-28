@@ -153,7 +153,7 @@ export default function BillsHistory() {
         <DialogContent dividers>
           {view && (
             <>
-              <Stack direction="row" spacing={3} flexWrap="wrap" sx={{ mb: 2 }}>
+              <Stack direction="row" spacing={3} sx={{ mb: 2, flexWrap: "wrap" }}>
                 <Info label="Party" value={view.partyName} />
                 <Info label="Date" value={format(new Date(view.date), "PPP")} />
                 <Info label="Type" value={view.type} />
