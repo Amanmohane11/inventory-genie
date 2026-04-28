@@ -4,9 +4,7 @@ import {
   TableCell, TableContainer, TableHead, TableRow, TextField, Typography, Dialog,
   DialogTitle, DialogContent, DialogActions, Grid,
 } from "@mui/material";
-import {
-  Add, Edit, Delete, Search, Inventory2,
-} from "@mui/icons-material";
+import { Add, Edit, Delete, Search, Inventory2 } from "@mui/icons-material";
 import { MuiLayout } from "@/components/MuiLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addItem, updateItem, deleteItem } from "@/store/slices/itemSlice";
@@ -52,16 +50,15 @@ export default function Items() {
     setDraft(empty);
   };
 
-  const onDelete = (id: string) => {
-    dispatch(deleteItem(id));
-    notify("Item deleted", "info");
-  };
-
   return (
     <MuiLayout>
-      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "center" }} spacing={2} mb={3}>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, mb: 3 }}
+      >
         <Box>
-          <Typography variant="h5" fontWeight={700}>Items</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>Items</Typography>
           <Typography variant="body2" color="text.secondary">
             {items.length} items · {lowStock} low stock
           </Typography>
@@ -77,8 +74,10 @@ export default function Items() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           sx={{ maxWidth: 360, mb: 2 }}
-          InputProps={{
-            startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment>,
+          slotProps={{
+            input: {
+              startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment>,
+            },
           }}
         />
         <TableContainer>
@@ -119,7 +118,7 @@ export default function Items() {
                     <IconButton size="small" onClick={() => { setDraft(i); setOpen(true); }}>
                       <Edit fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" color="error" onClick={() => onDelete(i.id)}>
+                    <IconButton size="small" color="error" onClick={() => { dispatch(deleteItem(i.id)); notify("Item deleted", "info"); }}>
                       <Delete fontSize="small" />
                     </IconButton>
                   </TableCell>
@@ -134,22 +133,22 @@ export default function Items() {
         <DialogTitle>{editing ? "Edit Item" : "Add Item"}</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField fullWidth label="Name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField fullWidth label="Code" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value })} />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField fullWidth label="Category" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField fullWidth type="number" label="Stock" value={draft.stock} onChange={(e) => setDraft({ ...draft, stock: +e.target.value })} />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField fullWidth type="number" label="Cost Price" value={draft.costPrice} onChange={(e) => setDraft({ ...draft, costPrice: +e.target.value })} />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField fullWidth type="number" label="Sale Price" value={draft.salePrice} onChange={(e) => setDraft({ ...draft, salePrice: +e.target.value })} />
             </Grid>
           </Grid>

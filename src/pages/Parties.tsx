@@ -55,38 +55,32 @@ export default function Parties() {
 
   const saveCustomer = () => {
     if (!cDraft.name || !cDraft.phone) return notify("Name and phone required", "error");
-    if (cDraft.id) {
-      dispatch(updateCustomer(cDraft));
-      notify("Customer updated", "success");
-    } else {
-      dispatch(addCustomer({ ...cDraft, id: `c-${Date.now()}`, createdAt: new Date().toISOString() }));
-      notify("Customer added", "success");
-    }
+    if (cDraft.id) { dispatch(updateCustomer(cDraft)); notify("Customer updated", "success"); }
+    else { dispatch(addCustomer({ ...cDraft, id: `c-${Date.now()}`, createdAt: new Date().toISOString() })); notify("Customer added", "success"); }
     setCOpen(false); setCDraft(blankCustomer);
   };
 
   const saveDealer = () => {
     if (!dDraft.name || !dDraft.phone) return notify("Name and phone required", "error");
-    if (dDraft.id) {
-      dispatch(updateDealer(dDraft));
-      notify("Dealer updated", "success");
-    } else {
-      dispatch(addDealer({ ...dDraft, id: `d-${Date.now()}` }));
-      notify("Dealer added", "success");
-    }
+    if (dDraft.id) { dispatch(updateDealer(dDraft)); notify("Dealer updated", "success"); }
+    else { dispatch(addDealer({ ...dDraft, id: `d-${Date.now()}` })); notify("Dealer added", "success"); }
     setDOpen(false); setDDraft(blankDealer);
   };
 
   return (
     <MuiLayout>
-      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "center" }} spacing={2} mb={2}>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, mb: 2 }}
+      >
         <Box>
-          <Typography variant="h5" fontWeight={700}>Parties</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>Parties</Typography>
           <Typography variant="body2" color="text.secondary">Manage customers and dealers</Typography>
         </Box>
         <TextField
           size="small" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)}
-          InputProps={{ startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> }}
+          slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
           sx={{ width: { xs: "100%", sm: 280 } }}
         />
       </Stack>
@@ -99,7 +93,7 @@ export default function Parties() {
 
         {tab === 0 && (
           <Box sx={{ p: 2 }}>
-            <Stack direction="row" justifyContent="flex-end" mb={2}>
+            <Stack direction="row" sx={{ justifyContent: "flex-end", mb: 2 }}>
               <Button variant="contained" startIcon={<Add />} onClick={() => { setCDraft(blankCustomer); setCOpen(true); }}>
                 Add Customer
               </Button>
@@ -149,7 +143,7 @@ export default function Parties() {
 
         {tab === 1 && (
           <Box sx={{ p: 2 }}>
-            <Stack direction="row" justifyContent="flex-end" mb={2}>
+            <Stack direction="row" sx={{ justifyContent: "flex-end", mb: 2 }}>
               <Button variant="contained" startIcon={<Add />} onClick={() => { setDDraft(blankDealer); setDOpen(true); }}>
                 Add Dealer
               </Button>
@@ -190,15 +184,14 @@ export default function Parties() {
         )}
       </Card>
 
-      {/* Customer dialog */}
       <Dialog open={cOpen} onClose={() => setCOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>{cDraft.id ? "Edit Customer" : "Add Customer"}</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Name" value={cDraft.name} onChange={(e) => setCDraft({ ...cDraft, name: e.target.value })} /></Grid>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Phone" value={cDraft.phone} onChange={(e) => setCDraft({ ...cDraft, phone: e.target.value })} /></Grid>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Email" value={cDraft.email} onChange={(e) => setCDraft({ ...cDraft, email: e.target.value })} /></Grid>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Address" value={cDraft.address} onChange={(e) => setCDraft({ ...cDraft, address: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Name" value={cDraft.name} onChange={(e) => setCDraft({ ...cDraft, name: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Phone" value={cDraft.phone} onChange={(e) => setCDraft({ ...cDraft, phone: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Email" value={cDraft.email} onChange={(e) => setCDraft({ ...cDraft, email: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Address" value={cDraft.address} onChange={(e) => setCDraft({ ...cDraft, address: e.target.value })} /></Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
@@ -207,16 +200,15 @@ export default function Parties() {
         </DialogActions>
       </Dialog>
 
-      {/* Dealer dialog */}
       <Dialog open={dOpen} onClose={() => setDOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>{dDraft.id ? "Edit Dealer" : "Add Dealer"}</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Name" value={dDraft.name} onChange={(e) => setDDraft({ ...dDraft, name: e.target.value })} /></Grid>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Phone" value={dDraft.phone} onChange={(e) => setDDraft({ ...dDraft, phone: e.target.value })} /></Grid>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Company" value={dDraft.company} onChange={(e) => setDDraft({ ...dDraft, company: e.target.value })} /></Grid>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Category" value={dDraft.productCategory} onChange={(e) => setDDraft({ ...dDraft, productCategory: e.target.value })} /></Grid>
-            <Grid item xs={12}><TextField fullWidth label="Email" value={dDraft.email} onChange={(e) => setDDraft({ ...dDraft, email: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Name" value={dDraft.name} onChange={(e) => setDDraft({ ...dDraft, name: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Phone" value={dDraft.phone} onChange={(e) => setDDraft({ ...dDraft, phone: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Company" value={dDraft.company} onChange={(e) => setDDraft({ ...dDraft, company: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Category" value={dDraft.productCategory} onChange={(e) => setDDraft({ ...dDraft, productCategory: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12 }}><TextField fullWidth label="Email" value={dDraft.email} onChange={(e) => setDDraft({ ...dDraft, email: e.target.value })} /></Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
