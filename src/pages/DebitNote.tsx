@@ -4,7 +4,7 @@ import {
   Grid, IconButton, MenuItem, Stack, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, TextField, Typography,
 } from "@mui/material";
-import { Add, Delete, RemoveCircleOutline } from "@mui/icons-material";
+import { Add, Delete, RemoveCircleOutlined } from "@mui/icons-material";
 import { format } from "date-fns";
 import { MuiLayout } from "@/components/MuiLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -63,7 +63,7 @@ export default function DebitNotePage() {
               {notes.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={{ py: 6, color: "text.secondary" }}>
-                    <RemoveCircleOutline sx={{ fontSize: 36, opacity: 0.4, display: "block", mx: "auto", mb: 1 }} />
+                    <RemoveCircleOutlined sx={{ fontSize: 36, opacity: 0.4, display: "block", mx: "auto", mb: 1 }} />
                     No debit notes yet
                   </TableCell>
                 </TableRow>
