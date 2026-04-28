@@ -1,26 +1,18 @@
-import { useMemo, useState } from "react";
-import { AppLayout } from "@/components/AppLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMemo, useState, SyntheticEvent } from "react";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Plus, Pencil, Trash2, Search, Users } from "lucide-react";
+  Box, Button, Card, Chip, Dialog, DialogActions, DialogContent, DialogTitle,
+  Grid, IconButton, InputAdornment, Stack, Tab, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, Tabs, TextField, Typography,
+} from "@mui/material";
+import { Add, Delete, Edit, People, Search } from "@mui/icons-material";
+import { MuiLayout } from "@/components/MuiLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   addCustomer, updateCustomer, deleteCustomer,
   addDealer, updateDealer, deleteDealer,
   Customer, Dealer,
 } from "@/store/slices/partySlice";
-import { toast } from "sonner";
+import { useNotify } from "@/components/NotifyProvider";
 
 const blankCustomer: Customer = {
   id: "", name: "", phone: "", email: "", address: "",
@@ -32,13 +24,14 @@ const blankDealer: Dealer = {
 
 const isActive = (lastTxn?: string) => {
   if (!lastTxn) return false;
-  const days = (Date.now() - new Date(lastTxn).getTime()) / 86400000;
-  return days <= 45;
+  return (Date.now() - new Date(lastTxn).getTime()) / 86400000 <= 45;
 };
 
 export default function Parties() {
   const { customers, dealers } = useAppSelector((s) => s.parties);
   const dispatch = useAppDispatch();
+  const notify = useNotify();
+  const [tab, setTab] = useState(0);
   const [q, setQ] = useState("");
 
   const [cOpen, setCOpen] = useState(false);
@@ -49,216 +42,188 @@ export default function Parties() {
   const filteredCustomers = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return customers;
-    return customers.filter(
-      (c) => c.name.toLowerCase().includes(t) || c.phone.includes(t)
-    );
+    return customers.filter((c) => c.name.toLowerCase().includes(t) || c.phone.includes(t));
   }, [customers, q]);
 
   const filteredDealers = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return dealers;
-    return dealers.filter(
-      (d) => d.name.toLowerCase().includes(t) || d.phone.includes(t) || d.company.toLowerCase().includes(t)
+    return dealers.filter((d) =>
+      d.name.toLowerCase().includes(t) || d.phone.includes(t) || d.company.toLowerCase().includes(t),
     );
   }, [dealers, q]);
 
   const saveCustomer = () => {
-    if (!cDraft.name || !cDraft.phone) return toast.error("Name and phone required");
+    if (!cDraft.name || !cDraft.phone) return notify("Name and phone required", "error");
     if (cDraft.id) {
       dispatch(updateCustomer(cDraft));
-      toast.success("Customer updated");
+      notify("Customer updated", "success");
     } else {
       dispatch(addCustomer({ ...cDraft, id: `c-${Date.now()}`, createdAt: new Date().toISOString() }));
-      toast.success("Customer added");
+      notify("Customer added", "success");
     }
     setCOpen(false); setCDraft(blankCustomer);
   };
 
   const saveDealer = () => {
-    if (!dDraft.name || !dDraft.phone) return toast.error("Name and phone required");
+    if (!dDraft.name || !dDraft.phone) return notify("Name and phone required", "error");
     if (dDraft.id) {
       dispatch(updateDealer(dDraft));
-      toast.success("Dealer updated");
+      notify("Dealer updated", "success");
     } else {
       dispatch(addDealer({ ...dDraft, id: `d-${Date.now()}` }));
-      toast.success("Dealer added");
+      notify("Dealer added", "success");
     }
     setDOpen(false); setDDraft(blankDealer);
   };
 
   return (
-    <AppLayout>
-      <PageHeader title="Parties" description="Manage customers and dealers" />
+    <MuiLayout>
+      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "center" }} spacing={2} mb={2}>
+        <Box>
+          <Typography variant="h5" fontWeight={700}>Parties</Typography>
+          <Typography variant="body2" color="text.secondary">Manage customers and dealers</Typography>
+        </Box>
+        <TextField
+          size="small" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)}
+          InputProps={{ startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> }}
+          sx={{ width: { xs: "100%", sm: 280 } }}
+        />
+      </Stack>
 
-      <Tabs defaultValue="customers">
-        <div className="flex flex-wrap gap-3 items-center justify-between mb-4">
-          <TabsList>
-            <TabsTrigger value="customers">Customers ({customers.length})</TabsTrigger>
-            <TabsTrigger value="dealers">Dealers ({dealers.length})</TabsTrigger>
-          </TabsList>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 border rounded-md px-2 bg-card">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search..."
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                className="border-0 shadow-none focus-visible:ring-0 px-0 w-48"
-              />
-            </div>
-          </div>
-        </div>
+      <Card>
+        <Tabs value={tab} onChange={(_e: SyntheticEvent, v: number) => setTab(v)} sx={{ px: 2, borderBottom: 1, borderColor: "divider" }}>
+          <Tab label={`Customers (${customers.length})`} />
+          <Tab label={`Dealers (${dealers.length})`} />
+        </Tabs>
 
-        <TabsContent value="customers">
-          <Card className="p-4 card-elevated">
-            <div className="flex justify-end mb-3">
-              <Dialog open={cOpen} onOpenChange={(o) => { setCOpen(o); if (!o) setCDraft(blankCustomer); }}>
-                <DialogTrigger asChild>
-                  <Button onClick={() => setCDraft(blankCustomer)}>
-                    <Plus className="h-4 w-4" /> Add Customer
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{cDraft.id ? "Edit Customer" : "Add Customer"}</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Name"><Input value={cDraft.name} onChange={(e) => setCDraft({ ...cDraft, name: e.target.value })} /></Field>
-                    <Field label="Phone"><Input value={cDraft.phone} onChange={(e) => setCDraft({ ...cDraft, phone: e.target.value })} /></Field>
-                    <Field label="Email"><Input value={cDraft.email} onChange={(e) => setCDraft({ ...cDraft, email: e.target.value })} /></Field>
-                    <Field label="Address"><Input value={cDraft.address} onChange={(e) => setCDraft({ ...cDraft, address: e.target.value })} /></Field>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setCOpen(false)}>Cancel</Button>
-                    <Button onClick={saveCustomer}>{cDraft.id ? "Save" : "Add"}</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
+        {tab === 0 && (
+          <Box sx={{ p: 2 }}>
+            <Stack direction="row" justifyContent="flex-end" mb={2}>
+              <Button variant="contained" startIcon={<Add />} onClick={() => { setCDraft(blankCustomer); setCOpen(true); }}>
+                Add Customer
+              </Button>
+            </Stack>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Visits</TableHead>
-                    <TableHead className="text-right">Total Spend</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Phone</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell align="right">Visits</TableCell>
+                    <TableCell align="right">Total Spend</TableCell>
+                    <TableCell align="right">Actions</TableCell>
                   </TableRow>
-                </TableHeader>
+                </TableHead>
                 <TableBody>
                   {filteredCustomers.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                        <Users className="h-8 w-8 mx-auto mb-2 opacity-50" /> No customers
-                      </TableCell>
-                    </TableRow>
+                    <TableRow><TableCell colSpan={6} align="center" sx={{ py: 6, color: "text.secondary" }}>
+                      <People sx={{ fontSize: 36, opacity: 0.4, display: "block", mx: "auto", mb: 1 }} />No customers
+                    </TableCell></TableRow>
                   )}
                   {filteredCustomers.map((c) => (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-medium">{c.name}</TableCell>
+                    <TableRow key={c.id} hover>
+                      <TableCell sx={{ fontWeight: 600 }}>{c.name}</TableCell>
                       <TableCell>{c.phone}</TableCell>
                       <TableCell>
-                        {isActive(c.lastTxn) ? (
-                          <Badge className="bg-success text-success-foreground hover:bg-success/90">Active</Badge>
-                        ) : (
-                          <Badge variant="secondary">Inactive</Badge>
-                        )}
+                        {isActive(c.lastTxn)
+                          ? <Chip size="small" color="success" label="Active" />
+                          : <Chip size="small" label="Inactive" />}
                       </TableCell>
-                      <TableCell className="text-right">{c.visits}</TableCell>
-                      <TableCell className="text-right">₹{c.totalSpend.toLocaleString("en-IN")}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => { setCDraft(c); setCOpen(true); }}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => { dispatch(deleteCustomer(c.id)); toast.success("Deleted"); }}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                      <TableCell align="right">{c.visits}</TableCell>
+                      <TableCell align="right">₹{c.totalSpend.toLocaleString("en-IN")}</TableCell>
+                      <TableCell align="right">
+                        <IconButton size="small" onClick={() => { setCDraft(c); setCOpen(true); }}><Edit fontSize="small" /></IconButton>
+                        <IconButton size="small" color="error" onClick={() => { dispatch(deleteCustomer(c.id)); notify("Deleted", "info"); }}>
+                          <Delete fontSize="small" />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
-          </Card>
-        </TabsContent>
+            </TableContainer>
+          </Box>
+        )}
 
-        <TabsContent value="dealers">
-          <Card className="p-4 card-elevated">
-            <div className="flex justify-end mb-3">
-              <Dialog open={dOpen} onOpenChange={(o) => { setDOpen(o); if (!o) setDDraft(blankDealer); }}>
-                <DialogTrigger asChild>
-                  <Button onClick={() => setDDraft(blankDealer)}>
-                    <Plus className="h-4 w-4" /> Add Dealer
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{dDraft.id ? "Edit Dealer" : "Add Dealer"}</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Name"><Input value={dDraft.name} onChange={(e) => setDDraft({ ...dDraft, name: e.target.value })} /></Field>
-                    <Field label="Phone"><Input value={dDraft.phone} onChange={(e) => setDDraft({ ...dDraft, phone: e.target.value })} /></Field>
-                    <Field label="Company"><Input value={dDraft.company} onChange={(e) => setDDraft({ ...dDraft, company: e.target.value })} /></Field>
-                    <Field label="Category"><Input value={dDraft.productCategory} onChange={(e) => setDDraft({ ...dDraft, productCategory: e.target.value })} /></Field>
-                    <Field label="Email"><Input value={dDraft.email} onChange={(e) => setDDraft({ ...dDraft, email: e.target.value })} /></Field>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setDOpen(false)}>Cancel</Button>
-                    <Button onClick={saveDealer}>{dDraft.id ? "Save" : "Add"}</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
+        {tab === 1 && (
+          <Box sx={{ p: 2 }}>
+            <Stack direction="row" justifyContent="flex-end" mb={2}>
+              <Button variant="contained" startIcon={<Add />} onClick={() => { setDDraft(blankDealer); setDOpen(true); }}>
+                Add Dealer
+              </Button>
+            </Stack>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Phone</TableCell>
+                    <TableCell>Company</TableCell>
+                    <TableCell>Category</TableCell>
+                    <TableCell align="right">Actions</TableCell>
                   </TableRow>
-                </TableHeader>
+                </TableHead>
                 <TableBody>
                   {filteredDealers.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">No dealers</TableCell>
-                    </TableRow>
+                    <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6, color: "text.secondary" }}>No dealers</TableCell></TableRow>
                   )}
                   {filteredDealers.map((d) => (
-                    <TableRow key={d.id}>
-                      <TableCell className="font-medium">{d.name}</TableCell>
+                    <TableRow key={d.id} hover>
+                      <TableCell sx={{ fontWeight: 600 }}>{d.name}</TableCell>
                       <TableCell>{d.phone}</TableCell>
                       <TableCell>{d.company}</TableCell>
                       <TableCell>{d.productCategory}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => { setDDraft(d); setDOpen(true); }}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => { dispatch(deleteDealer(d.id)); toast.success("Deleted"); }}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                      <TableCell align="right">
+                        <IconButton size="small" onClick={() => { setDDraft(d); setDOpen(true); }}><Edit fontSize="small" /></IconButton>
+                        <IconButton size="small" color="error" onClick={() => { dispatch(deleteDealer(d.id)); notify("Deleted", "info"); }}>
+                          <Delete fontSize="small" />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </AppLayout>
-  );
-}
+            </TableContainer>
+          </Box>
+        )}
+      </Card>
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs">{label}</Label>
-      {children}
-    </div>
+      {/* Customer dialog */}
+      <Dialog open={cOpen} onClose={() => setCOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>{cDraft.id ? "Edit Customer" : "Add Customer"}</DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Name" value={cDraft.name} onChange={(e) => setCDraft({ ...cDraft, name: e.target.value })} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Phone" value={cDraft.phone} onChange={(e) => setCDraft({ ...cDraft, phone: e.target.value })} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Email" value={cDraft.email} onChange={(e) => setCDraft({ ...cDraft, email: e.target.value })} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Address" value={cDraft.address} onChange={(e) => setCDraft({ ...cDraft, address: e.target.value })} /></Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={saveCustomer}>{cDraft.id ? "Save" : "Add"}</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dealer dialog */}
+      <Dialog open={dOpen} onClose={() => setDOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>{dDraft.id ? "Edit Dealer" : "Add Dealer"}</DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Name" value={dDraft.name} onChange={(e) => setDDraft({ ...dDraft, name: e.target.value })} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Phone" value={dDraft.phone} onChange={(e) => setDDraft({ ...dDraft, phone: e.target.value })} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Company" value={dDraft.company} onChange={(e) => setDDraft({ ...dDraft, company: e.target.value })} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Category" value={dDraft.productCategory} onChange={(e) => setDDraft({ ...dDraft, productCategory: e.target.value })} /></Grid>
+            <Grid item xs={12}><TextField fullWidth label="Email" value={dDraft.email} onChange={(e) => setDDraft({ ...dDraft, email: e.target.value })} /></Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={saveDealer}>{dDraft.id ? "Save" : "Add"}</Button>
+        </DialogActions>
+      </Dialog>
+    </MuiLayout>
   );
 }
