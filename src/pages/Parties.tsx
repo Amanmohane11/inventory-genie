@@ -20,6 +20,7 @@ const blankCustomer: Customer = {
 };
 const blankDealer: Dealer = {
   id: "", name: "", phone: "", email: "", company: "", productCategory: "",
+  address: "", gstNo: "", fssaiNo: "", licenseNo: "",
 };
 
 const isActive = (lastTxn?: string) => {
@@ -200,7 +201,7 @@ export default function Parties() {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={dOpen} onClose={() => setDOpen(false)} fullWidth maxWidth="sm">
+      <Dialog open={dOpen} onClose={() => setDOpen(false)} fullWidth maxWidth="md">
         <DialogTitle>{dDraft.id ? "Edit Dealer" : "Add Dealer"}</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
@@ -208,7 +209,11 @@ export default function Parties() {
             <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Phone" value={dDraft.phone} onChange={(e) => setDDraft({ ...dDraft, phone: e.target.value })} /></Grid>
             <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Company" value={dDraft.company} onChange={(e) => setDDraft({ ...dDraft, company: e.target.value })} /></Grid>
             <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Category" value={dDraft.productCategory} onChange={(e) => setDDraft({ ...dDraft, productCategory: e.target.value })} /></Grid>
-            <Grid size={{ xs: 12 }}><TextField fullWidth label="Email" value={dDraft.email} onChange={(e) => setDDraft({ ...dDraft, email: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Email" value={dDraft.email} onChange={(e) => setDDraft({ ...dDraft, email: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="GST No." value={dDraft.gstNo ?? ""} onChange={(e) => setDDraft({ ...dDraft, gstNo: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="FSSAI No." value={dDraft.fssaiNo ?? ""} onChange={(e) => setDDraft({ ...dDraft, fssaiNo: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="License No." value={dDraft.licenseNo ?? ""} onChange={(e) => setDDraft({ ...dDraft, licenseNo: e.target.value })} /></Grid>
+            <Grid size={{ xs: 12 }}><TextField fullWidth multiline minRows={2} label="Address" value={dDraft.address ?? ""} onChange={(e) => setDDraft({ ...dDraft, address: e.target.value })} /></Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
