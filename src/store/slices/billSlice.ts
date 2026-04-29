@@ -32,3 +32,4 @@ const billSlice = createSlice({
 
 export const { addBill, deleteBill, convertEstimateToSale } = billSlice.actions;
 export default billSlice.reducer;
+

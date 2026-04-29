@@ -1,24 +1,24 @@
 import { createTheme } from "@mui/material/styles";
 
-// Red + White theme
+// Yellow + White theme
 export const muiTheme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#D32F2F",
-      light: "#EF5350",
-      dark: "#9A0007",
-      contrastText: "#FFFFFF",
+      main: "#F5B400",       // Yellow
+      light: "#FFD24D",
+      dark: "#C68A00",
+      contrastText: "#1A1A1A",
     },
     secondary: {
-      main: "#212121",
+      main: "#1F1F1F",       // Dark gray/black for text accents
       contrastText: "#FFFFFF",
     },
     error: { main: "#D32F2F" },
     warning: { main: "#F59E0B" },
     success: { main: "#16A34A" },
     background: {
-      default: "#FAFAFA",
+      default: "#FFFFFF",
       paper: "#FFFFFF",
     },
     text: {
@@ -29,8 +29,7 @@ export const muiTheme = createTheme({
   },
   shape: { borderRadius: 12 },
   typography: {
-    fontFamily:
-      '"Inter","Roboto","Helvetica","Arial",sans-serif',
+    fontFamily: '"Inter","Roboto","Helvetica","Arial",sans-serif',
     h1: { fontWeight: 700 },
     h2: { fontWeight: 700 },
     h3: { fontWeight: 700 },
@@ -72,7 +71,7 @@ export const muiTheme = createTheme({
     },
     MuiTableCell: {
       styleOverrides: {
-        head: { fontWeight: 600, backgroundColor: "#FFF5F5" },
+        head: { fontWeight: 600, backgroundColor: "#FFFBEA" },
       },
     },
   },

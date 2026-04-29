@@ -80,11 +80,19 @@ export const makeSelectChart = (range: Range) =>
       if (map[k]) map[k].expenses += e.amount;
     });
 
-    return buckets.map(b => ({
-      label: b.label,
-      sales: Math.round(map[b.key].sales),
-      profit: Math.round(map[b.key].sales - map[b.key].purchase - map[b.key].expenses),
-    }));
+    return buckets.map(b => {
+      const sales = Math.round(map[b.key].sales);
+      const purchase = Math.round(map[b.key].purchase);
+      const expenses = Math.round(map[b.key].expenses);
+      const net = sales - purchase - expenses;
+      return {
+        label: b.label,
+        sales,
+        profit: net >= 0 ? net : 0,
+        loss: net < 0 ? -net : 0,
+        net,
+      };
+    });
   });
 
 export const makeSelectProductInsights = (range: Range) =>

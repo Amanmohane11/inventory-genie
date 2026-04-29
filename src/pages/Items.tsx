@@ -13,6 +13,7 @@ import { useNotify } from "@/components/NotifyProvider";
 
 const empty: Item = {
   id: "", name: "", code: "", category: "", stock: 0, costPrice: 0, salePrice: 0,
+  barcode: "", openingStock: 0, unit: "pcs", hsn: "",
 };
 
 export default function Items() {
@@ -43,7 +44,8 @@ export default function Items() {
       dispatch(updateItem(draft));
       notify("Item updated", "success");
     } else {
-      dispatch(addItem({ ...draft, id: `i-${Date.now()}` }));
+      const stock = draft.stock || draft.openingStock || 0;
+      dispatch(addItem({ ...draft, id: `i-${Date.now()}`, stock, openingStock: draft.openingStock ?? stock }));
       notify("Item added", "success");
     }
     setOpen(false);
@@ -129,7 +131,7 @@ export default function Items() {
         </TableContainer>
       </Card>
 
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
         <DialogTitle>{editing ? "Edit Item" : "Add Item"}</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
@@ -142,13 +144,29 @@ export default function Items() {
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField fullWidth label="Category" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField fullWidth type="number" label="Stock" value={draft.stock} onChange={(e) => setDraft({ ...draft, stock: +e.target.value })} />
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <TextField fullWidth label="Unit" value={draft.unit ?? ""} onChange={(e) => setDraft({ ...draft, unit: e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <TextField fullWidth label="HSN" value={draft.hsn ?? ""} onChange={(e) => setDraft({ ...draft, hsn: e.target.value })} />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth label="Barcode (scan or enter)" value={draft.barcode ?? ""}
+                onChange={(e) => setDraft({ ...draft, barcode: e.target.value })}
+                placeholder="Scan with barcode reader or type"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField fullWidth type="number" label="Opening Stock" value={draft.openingStock ?? 0} onChange={(e) => setDraft({ ...draft, openingStock: +e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <TextField fullWidth type="number" label="Current Stock" value={draft.stock} onChange={(e) => setDraft({ ...draft, stock: +e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField fullWidth type="number" label="Cost Price" value={draft.costPrice} onChange={(e) => setDraft({ ...draft, costPrice: +e.target.value })} />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField fullWidth type="number" label="Sale Price" value={draft.salePrice} onChange={(e) => setDraft({ ...draft, salePrice: +e.target.value })} />
             </Grid>
           </Grid>

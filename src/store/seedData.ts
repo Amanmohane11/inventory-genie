@@ -8,6 +8,10 @@ export type Item = {
   stock: number;
   costPrice: number;
   salePrice: number;
+  barcode?: string;
+  openingStock?: number;
+  unit?: string;
+  hsn?: string;
 };
 
 export type BillItem = {
@@ -17,11 +21,17 @@ export type BillItem = {
   price: number;       // unit sale or purchase price (excl GST)
   gstRate: number;     // %
   discount: number;    // amount
+  unit?: string;
+  mrp?: number;
+  hsn?: string;
+  batchNo?: string;
+  expiry?: string;
+  free?: number;
 };
 
 export type Bill = {
   id: string;
-  type: "sales" | "purchase" | "estimate";
+  type: "sales" | "purchase" | "estimate" | "return";
   date: string;        // ISO
   partyName: string;
   partyPhone?: string;
@@ -31,6 +41,7 @@ export type Bill = {
   paid?: boolean;
   notes?: string;
   expiryDate?: string;  // for estimates
+  billNo?: string;      // manual entry for purchase
 };
 
 export type Expense = {
