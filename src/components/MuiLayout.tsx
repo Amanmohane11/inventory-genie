@@ -22,9 +22,10 @@ const main = [
 ];
 
 const billChildren = [
-  { title: "Sales Bill", url: "/bills/sales", icon: <ShoppingCart fontSize="small" /> },
+  { title: "Sales Bills", url: "/bills/sales", icon: <ShoppingCart fontSize="small" /> },
+  { title: "Return Sales Bill", url: "/bills/return", icon: <AssignmentReturn fontSize="small" /> },
   { title: "Estimate", url: "/bills/estimate", icon: <Description fontSize="small" /> },
-  { title: "Purchase Bill", url: "/bills/purchase", icon: <ShoppingBag fontSize="small" /> },
+  { title: "Purchase Bills", url: "/bills/purchase", icon: <ShoppingBag fontSize="small" /> },
   { title: "History", url: "/bills/history", icon: <HistoryIcon fontSize="small" /> },
 ];
 
@@ -192,16 +193,19 @@ const navBtnSx = (active: boolean, dense?: boolean) => ({
   borderRadius: 2,
   mb: 0.5,
   py: dense ? 0.5 : 0.75,
-  color: active ? "primary.main" : "text.secondary",
-  bgcolor: active ? "rgba(211,47,47,0.08)" : "transparent",
-  "&:hover": { bgcolor: active ? "rgba(211,47,47,0.12)" : "rgba(0,0,0,0.04)" },
+  color: active ? "secondary.main" : "text.secondary",
+  bgcolor: active ? "rgba(245,180,0,0.18)" : "transparent",
+  "&:hover": { bgcolor: active ? "rgba(245,180,0,0.28)" : "rgba(0,0,0,0.04)" },
 });
 
 function pageTitle(p: string): string {
   if (p === "/") return "Dashboard";
-  if (p.startsWith("/bills/sales")) return "Sales Bill";
+  if (p.startsWith("/bills/sales/new")) return "Create Sales Bill";
+  if (p.startsWith("/bills/sales")) return "Sales Bills";
+  if (p.startsWith("/bills/return")) return "Return Sales Bill";
   if (p.startsWith("/bills/estimate")) return "Estimate Bill";
-  if (p.startsWith("/bills/purchase")) return "Purchase Bill";
+  if (p.startsWith("/bills/purchase/new")) return "Create Purchase Bill";
+  if (p.startsWith("/bills/purchase")) return "Purchase Bills";
   if (p.startsWith("/bills/history")) return "Bills History";
   if (p.startsWith("/debit-note")) return "Debit Note";
   if (p.startsWith("/reports")) return "Reports";
