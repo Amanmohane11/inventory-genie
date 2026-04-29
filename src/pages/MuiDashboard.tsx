@@ -8,6 +8,7 @@ import {
   ArrowUpward, ArrowDownward,
 } from "@mui/icons-material";
 import { BarChart } from "@mui/x-charts/BarChart";
+import { LineChart } from "@mui/x-charts/LineChart";
 import { useAppSelector } from "@/store";
 import {
   makeSelectTotals, makeSelectChart, makeSelectProductInsights, Range,
@@ -60,31 +61,49 @@ export default function MuiDashboard() {
         <StatCard label="Payments Received" value={fmt(totals.paymentsReceived)} icon={<AccountBalanceWallet />} />
       </Box>
 
-      <Card>
-        <CardContent>
-          <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-            <Box>
-              <Typography variant="h6">Sales & Profit</Typography>
-              <Typography variant="caption" color="text.secondary">
-                Bar chart over time
-              </Typography>
+      <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" } }}>
+        <Card>
+          <CardContent>
+            <Stack sx={{ mb: 1 }}>
+              <Typography variant="h6">Sales / Revenue</Typography>
+              <Typography variant="caption" color="text.secondary">Bar graph over time</Typography>
+            </Stack>
+            <Box sx={{ width: "100%", height: 320 }}>
+              <BarChart
+                dataset={chart as any}
+                xAxis={[{ scaleType: "band", dataKey: "label" }]}
+                series={[
+                  { dataKey: "sales", label: "Sales", color: "#F5B400" },
+                ]}
+                height={300}
+                margin={{ top: 16, right: 16, bottom: 24, left: 56 }}
+                borderRadius={6}
+              />
             </Box>
-          </Stack>
-          <Box sx={{ width: "100%", height: 320 }}>
-            <BarChart
-              dataset={chart as any}
-              xAxis={[{ scaleType: "band", dataKey: "label" }]}
-              series={[
-                { dataKey: "sales", label: "Sales", color: "#D32F2F" },
-                { dataKey: "profit", label: "Profit", color: "#212121" },
-              ]}
-              height={300}
-              margin={{ top: 16, right: 16, bottom: 24, left: 56 }}
-              borderRadius={6}
-            />
-          </Box>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <Stack sx={{ mb: 1 }}>
+              <Typography variant="h6">Profit & Loss</Typography>
+              <Typography variant="caption" color="text.secondary">Profit (green) vs Loss (red)</Typography>
+            </Stack>
+            <Box sx={{ width: "100%", height: 320 }}>
+              <LineChart
+                dataset={chart as any}
+                xAxis={[{ scaleType: "point", dataKey: "label" }]}
+                series={[
+                  { dataKey: "profit", label: "Profit", color: "#16A34A", area: true, showMark: false },
+                  { dataKey: "loss", label: "Loss", color: "#D32F2F", area: true, showMark: false },
+                ]}
+                height={300}
+                margin={{ top: 16, right: 16, bottom: 24, left: 56 }}
+              />
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
 
       <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" } }}>
         <InsightCard title="Top Selling" rows={top} positive emptyHint="No sales in this range" />
