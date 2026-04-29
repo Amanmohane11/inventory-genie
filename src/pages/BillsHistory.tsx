@@ -26,15 +26,23 @@ export default function BillsHistory() {
   const [tab, setTab] = useState<TabKey>("all");
   const [q, setQ] = useState("");
   const [view, setView] = useState<Bill | null>(null);
+  const [confirmConvert, setConfirmConvert] = useState<Bill | null>(null);
 
-  const handleConvert = (b: Bill) => {
+  const doConvert = () => {
+    const b = confirmConvert;
+    if (!b) return;
     for (const l of b.items) {
       const it = items.find((x) => x.id === l.itemId);
-      if (it && l.qty > it.stock) return notify(`${it.name}: only ${it.stock} in stock`, "error");
+      if (it && l.qty > it.stock) {
+        notify(`${it.name}: only ${it.stock} in stock`, "error");
+        setConfirmConvert(null);
+        return;
+      }
     }
     dispatch(convertEstimateToSale({ id: b.id, paymentMode: "upi" }));
     for (const l of b.items) dispatch(adjustStock({ id: l.itemId, delta: -l.qty }));
-    notify("Estimate converted to sale", "success");
+    notify("Estimate converted to sale — stock deducted", "success");
+    setConfirmConvert(null);
   };
 
   const filtered = useMemo(() => {
@@ -73,6 +81,7 @@ export default function BillsHistory() {
           <Tab value="sales" label="Sales" />
           <Tab value="estimate" label="Estimate" />
           <Tab value="purchase" label="Purchase" />
+          <Tab value="return" label="Return" />
         </Tabs>
 
         <TableContainer>
