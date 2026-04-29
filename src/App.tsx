@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound.tsx";
 import Items from "./pages/Items.tsx";
 import Parties from "./pages/Parties.tsx";
 import BillForm from "./pages/BillForm.tsx";
+import BillsList from "./pages/BillsList.tsx";
 import BillsHistory from "./pages/BillsHistory.tsx";
 import DebitNote from "./pages/DebitNote.tsx";
 import Reports from "./pages/Reports.tsx";
@@ -30,9 +31,13 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/parties" element={<Parties />} />
                 <Route path="/items" element={<Items />} />
-                <Route path="/bills/sales" element={<BillForm type="sales" />} />
+                <Route path="/bills/sales" element={<BillsList kind="sales" />} />
+                <Route path="/bills/sales/new" element={<BillForm type="sales" />} />
+                <Route path="/bills/return" element={<BillsList kind="return" />} />
+                <Route path="/bills/return/new" element={<BillForm type="return" />} />
                 <Route path="/bills/estimate" element={<BillForm type="estimate" />} />
-                <Route path="/bills/purchase" element={<BillForm type="purchase" />} />
+                <Route path="/bills/purchase" element={<BillsList kind="purchase" />} />
+                <Route path="/bills/purchase/new" element={<BillForm type="purchase" />} />
                 <Route path="/bills/history" element={<BillsHistory />} />
                 <Route path="/debit-note" element={<DebitNote />} />
                 <Route path="/reports" element={<Reports />} />
