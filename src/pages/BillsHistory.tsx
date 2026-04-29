@@ -211,6 +211,20 @@ export default function BillsHistory() {
           <Button onClick={() => setView(null)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={!!confirmConvert} onClose={() => setConfirmConvert(null)} fullWidth maxWidth="xs">
+        <DialogTitle>Convert estimate to sales bill?</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2">
+            This will convert <b>{confirmConvert?.id}</b> ({confirmConvert?.partyName}) into a final
+            Sales Bill. Inventory will be deducted and it will appear in Sales Bill history.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmConvert(null)}>Cancel</Button>
+          <Button variant="contained" color="success" onClick={doConvert}>Confirm Convert</Button>
+        </DialogActions>
+      </Dialog>
     </MuiLayout>
   );
 }
