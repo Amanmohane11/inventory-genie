@@ -132,10 +132,17 @@ export default function BillsHistory() {
                   </TableCell>
                   <TableCell align="right">
                     {b.type === "estimate" && (
-                      <Tooltip title="Convert to sale">
-                        <IconButton size="small" color="success" onClick={() => handleConvert(b)}>
-                          <SwapHoriz fontSize="small" />
-                        </IconButton>
+                      <Tooltip title="Convert to original (sales) bill">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="success"
+                          startIcon={<SwapHoriz />}
+                          onClick={() => setConfirmConvert(b)}
+                          sx={{ mr: 1 }}
+                        >
+                          Convert
+                        </Button>
                       </Tooltip>
                     )}
                     <Tooltip title="View">
