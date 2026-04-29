@@ -7,6 +7,7 @@ export type Customer = {
 export type Dealer = {
   id: string; name: string; phone: string; email?: string;
   company: string; productCategory: string;
+  address?: string; gstNo?: string; fssaiNo?: string; licenseNo?: string;
 };
 
 type State = { customers: Customer[]; dealers: Dealer[] };
