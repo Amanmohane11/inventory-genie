@@ -624,7 +624,7 @@ function ProductPicker({
     <Box sx={{ position: "relative" }}>
       <TextField
         size="small" fullWidth value={value}
-        inputProps={{ "data-row-product": "true" }}
+        slotProps={{ htmlInput: { "data-row-product": "true" } }}
         placeholder="Search product / scan barcode"
         onChange={(e) => { onTextChange(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
