@@ -412,8 +412,10 @@ export default function DebitNotePage() {
                               )}
                               renderInput={(p) => (
                                 <TextField {...p} placeholder="Search product…"
-                                  inputProps={{ ...p.inputProps, "data-dn-product": "1" } as any}
-                                  onKeyDown={(e) => onRowKeyDown(e, idx)} />
+                                  onKeyDown={(e) => onRowKeyDown(e, idx)}
+                                  slotProps={{
+                                    htmlInput: { ...(p.inputProps as any), "data-dn-product": "1" },
+                                  }} />
                               )}
                             />
                           </TableCell>
