@@ -330,6 +330,7 @@ export default function BillForm({ type }: { type: BillKind }) {
     isReturn ? AssignmentReturn :
     ShoppingCart;
   const headerLabel =
+    isEdit ? "Edit Sales Bill" :
     isEstimate ? "Create Estimate Bill" :
     isPurchase ? "Create Purchase Bill" :
     isReturn ? "Create Return Sales Bill" :
@@ -645,7 +646,8 @@ export default function BillForm({ type }: { type: BillKind }) {
                   </Stack>
                 </Stack>
                 <Button fullWidth variant="contained" size="large" startIcon={<Save />} sx={{ mt: 2 }} onClick={submit}>
-                  {isEstimate ? "Save Estimate" :
+                  {isEdit ? "Update Bill" :
+                    isEstimate ? "Save Estimate" :
                     isPurchase ? "Save Purchase" :
                     isReturn ? "Save Return" :
                     "Create Sales Bill"}
