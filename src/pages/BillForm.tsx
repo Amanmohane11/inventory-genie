@@ -122,6 +122,28 @@ export default function BillForm({ type }: { type: BillKind }) {
   // -------- Rows --------
   const [rows, setRows] = useState<Row[]>([newRow()]);
 
+  // Prefill when editing an existing bill
+  useEffect(() => {
+    if (!isEdit || !existingBill) return;
+    if (existingBill.partyPhone) setPhone(existingBill.partyPhone);
+    setParty({
+      name: existingBill.partyName,
+      phone: existingBill.partyPhone ?? "",
+      email: existingBill.partyEmail,
+    });
+    setRows(
+      existingBill.items.map((bi) => ({
+        ...bi,
+        _key: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        productInput: bi.name,
+      })),
+    );
+    if (existingBill.paymentMode) setPaymentMode(existingBill.paymentMode);
+    setNotes(existingBill.notes ?? "");
+    setBillDate(new Date(existingBill.date));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, existingBill?.id]);
+
   const updateRow = (idx: number, patch: Partial<Row>) =>
     setRows((rs) => rs.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
 
