@@ -78,10 +78,9 @@ export default function BillsHistory() {
       <Card>
         <Tabs value={tab} onChange={(_e: SyntheticEvent, v: TabKey) => setTab(v)} sx={{ px: 2, borderBottom: 1, borderColor: "divider" }}>
           <Tab value="all" label="All" />
-          <Tab value="sales" label="Sales" />
-          <Tab value="estimate" label="Estimate" />
-          <Tab value="purchase" label="Purchase" />
-          <Tab value="return" label="Return" />
+          <Tab value="sales" label="Sales Bill" />
+          <Tab value="estimate" label="Estimate Bill" />
+          <Tab value="purchase" label="Purchase Bill" />
         </Tabs>
 
         <TableContainer>

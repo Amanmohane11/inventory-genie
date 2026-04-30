@@ -1,26 +1,29 @@
 import { useMemo, useState } from "react";
 import {
-  Box, Button, Card, Chip, IconButton, InputAdornment, Stack, Table, TableBody,
+  Box, Button, Card, Chip, Dialog, DialogActions, DialogContent, DialogTitle,
+  IconButton, InputAdornment, Stack, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography,
 } from "@mui/material";
-import { Add, Search, Delete, Receipt } from "@mui/icons-material";
+import { Add, Search, Delete, Receipt, Edit, SwapHoriz } from "@mui/icons-material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { MuiLayout } from "@/components/MuiLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { deleteBill } from "@/store/slices/billSlice";
+import { deleteBill, convertEstimateToSale } from "@/store/slices/billSlice";
+import { adjustStock } from "@/store/slices/itemSlice";
 import { Bill } from "@/store/seedData";
 import { useNotify } from "@/components/NotifyProvider";
 
-type Kind = "sales" | "purchase" | "return";
+type Kind = "sales" | "purchase" | "estimate";
 
 const titleFor = (k: Kind) =>
-  k === "sales" ? "Sales Bills" : k === "purchase" ? "Purchase Bills" : "Return Sales Bills";
+  k === "sales" ? "Sales Bills" : k === "purchase" ? "Purchase Bills" : "Estimate Bills";
 const createPath = (k: Kind) => `/bills/${k}/new`;
 
 export default function BillsList({ kind }: { kind: Kind }) {
   const bills = useAppSelector((s) => s.bills.bills);
+  const items = useAppSelector((s) => s.items.items);
   const dispatch = useAppDispatch();
   const notify = useNotify();
   const nav = useNavigate();
@@ -29,6 +32,7 @@ export default function BillsList({ kind }: { kind: Kind }) {
   const [from, setFrom] = useState<Date | null>(null);
   const [to, setTo] = useState<Date | null>(null);
   const [page, setPage] = useState(0);
+  const [convert, setConvert] = useState<Bill | null>(null);
   const PAGE = 25;
 
   const filtered = useMemo(() => {
@@ -63,6 +67,25 @@ export default function BillsList({ kind }: { kind: Kind }) {
       return acc + sub + (sub * l.gstRate) / 100;
     }, 0);
 
+  const doConvert = () => {
+    const b = convert;
+    if (!b) return;
+    for (const l of b.items) {
+      const it = items.find((x) => x.id === l.itemId);
+      if (it && l.qty > it.stock) {
+        notify(`${it.name}: only ${it.stock} in stock`, "error");
+        setConvert(null);
+        return;
+      }
+    }
+    dispatch(convertEstimateToSale({ id: b.id, paymentMode: "upi" }));
+    for (const l of b.items) dispatch(adjustStock({ id: l.itemId, delta: -l.qty }));
+    notify("Estimate converted to sales bill — stock deducted", "success");
+    setConvert(null);
+  };
+
+  const showItemsCol = kind !== "purchase";
+
   return (
     <MuiLayout>
       <Stack
@@ -77,7 +100,7 @@ export default function BillsList({ kind }: { kind: Kind }) {
           </Typography>
         </Box>
         <Button variant="contained" startIcon={<Add />} onClick={() => nav(createPath(kind))}>
-          Create Bill
+          {kind === "estimate" ? "Create Estimate Bill" : "Create Bill"}
         </Button>
       </Stack>
 
@@ -118,16 +141,17 @@ export default function BillsList({ kind }: { kind: Kind }) {
                 <TableCell>Bill #</TableCell>
                 <TableCell>Date</TableCell>
                 <TableCell>{kind === "purchase" ? "Dealer" : "Customer"}</TableCell>
-                <TableCell align="right">Items</TableCell>
+                {showItemsCol && <TableCell align="right">Items</TableCell>}
                 <TableCell align="right">Total</TableCell>
                 {kind === "sales" && <TableCell>Status</TableCell>}
+                {kind === "estimate" && <TableCell>Expiry</TableCell>}
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {paged.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={kind === "sales" ? 7 : 6} align="center" sx={{ py: 6, color: "text.secondary" }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 6, color: "text.secondary" }}>
                     <Receipt sx={{ fontSize: 36, opacity: 0.4, display: "block", mx: "auto", mb: 1 }} />
                     No bills found
                   </TableCell>
@@ -140,14 +164,44 @@ export default function BillsList({ kind }: { kind: Kind }) {
                   </TableCell>
                   <TableCell>{format(new Date(b.date), "dd MMM yy")}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{b.partyName}</TableCell>
-                  <TableCell align="right">{b.items.length}</TableCell>
+                  {showItemsCol && <TableCell align="right">{b.items.length}</TableCell>}
                   <TableCell align="right" sx={{ fontWeight: 700 }}>₹{sumOf(b).toFixed(2)}</TableCell>
                   {kind === "sales" && (
                     <TableCell>
                       <Chip size="small" color={b.paid ? "success" : "error"} label={b.paid ? "Paid" : "Unpaid"} />
                     </TableCell>
                   )}
+                  {kind === "estimate" && (
+                    <TableCell>
+                      {b.expiryDate ? format(new Date(b.expiryDate), "dd MMM yy") : "—"}
+                    </TableCell>
+                  )}
                   <TableCell align="right">
+                    {kind === "estimate" && (
+                      <Tooltip title="Convert to Sales Bill">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="success"
+                          startIcon={<SwapHoriz />}
+                          onClick={() => setConvert(b)}
+                          sx={{ mr: 1 }}
+                        >
+                          Convert to Original
+                        </Button>
+                      </Tooltip>
+                    )}
+                    {kind === "sales" && (
+                      <Tooltip title="Edit bill">
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => nav(`/bills/sales/${b.id}/edit`)}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     <Tooltip title="Delete">
                       <IconButton
                         size="small" color="error"
@@ -170,6 +224,20 @@ export default function BillsList({ kind }: { kind: Kind }) {
           <Button size="small" disabled={page + 1 >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</Button>
         </Stack>
       </Card>
+
+      <Dialog open={!!convert} onClose={() => setConvert(null)} fullWidth maxWidth="xs">
+        <DialogTitle>Convert estimate to sales bill?</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2">
+            This will move <b>{convert?.id}</b> ({convert?.partyName}) from Estimates into
+            Sales Bills. Inventory will be deducted accordingly.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConvert(null)}>Cancel</Button>
+          <Button variant="contained" color="success" onClick={doConvert}>Confirm Convert</Button>
+        </DialogActions>
+      </Dialog>
     </MuiLayout>
   );
 }

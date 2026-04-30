@@ -33,9 +33,9 @@ const App = () => (
                 <Route path="/items" element={<Items />} />
                 <Route path="/bills/sales" element={<BillsList kind="sales" />} />
                 <Route path="/bills/sales/new" element={<BillForm type="sales" />} />
-                <Route path="/bills/return" element={<BillsList kind="return" />} />
-                <Route path="/bills/return/new" element={<BillForm type="return" />} />
-                <Route path="/bills/estimate" element={<BillForm type="estimate" />} />
+                <Route path="/bills/sales/:id/edit" element={<BillForm type="sales" />} />
+                <Route path="/bills/estimate" element={<BillsList kind="estimate" />} />
+                <Route path="/bills/estimate/new" element={<BillForm type="estimate" />} />
                 <Route path="/bills/purchase" element={<BillsList kind="purchase" />} />
                 <Route path="/bills/purchase/new" element={<BillForm type="purchase" />} />
                 <Route path="/bills/history" element={<BillsHistory />} />

@@ -23,8 +23,7 @@ const main = [
 
 const billChildren = [
   { title: "Sales Bills", url: "/bills/sales", icon: <ShoppingCart fontSize="small" /> },
-  { title: "Return Sales Bill", url: "/bills/return", icon: <AssignmentReturn fontSize="small" /> },
-  { title: "Estimate", url: "/bills/estimate", icon: <Description fontSize="small" /> },
+  { title: "Estimate Bills", url: "/bills/estimate", icon: <Description fontSize="small" /> },
   { title: "Purchase Bills", url: "/bills/purchase", icon: <ShoppingBag fontSize="small" /> },
   { title: "History", url: "/bills/history", icon: <HistoryIcon fontSize="small" /> },
 ];
@@ -201,9 +200,10 @@ const navBtnSx = (active: boolean, dense?: boolean) => ({
 function pageTitle(p: string): string {
   if (p === "/") return "Dashboard";
   if (p.startsWith("/bills/sales/new")) return "Create Sales Bill";
+  if (p.match(/^\/bills\/sales\/[^/]+\/edit/)) return "Edit Sales Bill";
   if (p.startsWith("/bills/sales")) return "Sales Bills";
-  if (p.startsWith("/bills/return")) return "Return Sales Bill";
-  if (p.startsWith("/bills/estimate")) return "Estimate Bill";
+  if (p.startsWith("/bills/estimate/new")) return "Create Estimate Bill";
+  if (p.startsWith("/bills/estimate")) return "Estimate Bills";
   if (p.startsWith("/bills/purchase/new")) return "Create Purchase Bill";
   if (p.startsWith("/bills/purchase")) return "Purchase Bills";
   if (p.startsWith("/bills/history")) return "Bills History";

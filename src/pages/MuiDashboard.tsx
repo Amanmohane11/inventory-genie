@@ -8,7 +8,6 @@ import {
   ArrowUpward, ArrowDownward,
 } from "@mui/icons-material";
 import { BarChart } from "@mui/x-charts/BarChart";
-import { LineChart } from "@mui/x-charts/LineChart";
 import { useAppSelector } from "@/store";
 import {
   makeSelectTotals, makeSelectChart, makeSelectProductInsights, Range,
@@ -90,15 +89,16 @@ export default function MuiDashboard() {
               <Typography variant="caption" color="text.secondary">Profit (green) vs Loss (red)</Typography>
             </Stack>
             <Box sx={{ width: "100%", height: 320 }}>
-              <LineChart
+              <BarChart
                 dataset={chart as any}
-                xAxis={[{ scaleType: "point", dataKey: "label" }]}
+                xAxis={[{ scaleType: "band", dataKey: "label" }]}
                 series={[
-                  { dataKey: "profit", label: "Profit", color: "#16A34A", area: true, showMark: false },
-                  { dataKey: "loss", label: "Loss", color: "#D32F2F", area: true, showMark: false },
+                  { dataKey: "profit", label: "Profit", color: "#16A34A" },
+                  { dataKey: "loss", label: "Loss", color: "#D32F2F" },
                 ]}
                 height={300}
                 margin={{ top: 16, right: 16, bottom: 24, left: 56 }}
+                borderRadius={6}
               />
             </Box>
           </CardContent>

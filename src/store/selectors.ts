@@ -1,6 +1,10 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "./index";
-import { startOfWeek, startOfMonth, startOfYear, format, subDays, subMonths, eachDayOfInterval, eachMonthOfInterval } from "date-fns";
+import {
+  startOfWeek, endOfWeek, startOfMonth, startOfYear, format,
+  eachDayOfInterval, eachMonthOfInterval, eachYearOfInterval,
+  subYears, endOfYear,
+} from "date-fns";
 
 export type Range = "weekly" | "monthly" | "yearly";
 
@@ -52,17 +56,26 @@ export const makeSelectChart = (range: Range) =>
     let bucketOf: (d: Date) => string;
 
     if (range === "weekly") {
-      const days = eachDayOfInterval({ start: subDays(now, 6), end: now });
+      // Current week, Monday → Sunday
+      const start = startOfWeek(now, { weekStartsOn: 1 });
+      const end = endOfWeek(now, { weekStartsOn: 1 });
+      const days = eachDayOfInterval({ start, end });
       buckets = days.map(d => ({ key: format(d, "yyyy-MM-dd"), label: format(d, "EEE") }));
       bucketOf = (d) => format(d, "yyyy-MM-dd");
     } else if (range === "monthly") {
-      const days = eachDayOfInterval({ start: subDays(now, 29), end: now });
-      buckets = days.map(d => ({ key: format(d, "yyyy-MM-dd"), label: format(d, "d MMM") }));
-      bucketOf = (d) => format(d, "yyyy-MM-dd");
-    } else {
-      const months = eachMonthOfInterval({ start: subMonths(now, 11), end: now });
+      // Current year, Jan → Dec (months only, never days)
+      const start = startOfYear(now);
+      const end = endOfYear(now);
+      const months = eachMonthOfInterval({ start, end });
       buckets = months.map(d => ({ key: format(d, "yyyy-MM"), label: format(d, "MMM") }));
       bucketOf = (d) => format(d, "yyyy-MM");
+    } else {
+      // Last 5 years (oldest → current)
+      const start = startOfYear(subYears(now, 4));
+      const end = endOfYear(now);
+      const years = eachYearOfInterval({ start, end });
+      buckets = years.map(d => ({ key: format(d, "yyyy"), label: format(d, "yyyy") }));
+      bucketOf = (d) => format(d, "yyyy");
     }
 
     const map: Record<string, { sales: number; purchase: number; expenses: number }> = {};
