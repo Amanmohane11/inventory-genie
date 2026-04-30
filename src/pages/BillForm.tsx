@@ -13,12 +13,12 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { format } from "date-fns";
 import { MuiLayout } from "@/components/MuiLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { addBill } from "@/store/slices/billSlice";
+import { addBill, updateBill } from "@/store/slices/billSlice";
 import { adjustStock } from "@/store/slices/itemSlice";
 import { addCustomer } from "@/store/slices/partySlice";
 import { Bill, BillItem, Item } from "@/store/seedData";
 import { useNotify } from "@/components/NotifyProvider";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 type BillKind = "sales" | "purchase" | "estimate" | "return";
 
@@ -48,11 +48,16 @@ export default function BillForm({ type }: { type: BillKind }) {
   const nav = useNavigate();
   const dispatch = useAppDispatch();
   const notify = useNotify();
+  const { id: editId } = useParams<{ id?: string }>();
 
   const items = useAppSelector((s) => s.items.items);
   const customers = useAppSelector((s) => s.parties.customers);
   const dealers = useAppSelector((s) => s.parties.dealers);
   const billsCount = useAppSelector((s) => s.bills.bills.length);
+  const existingBill = useAppSelector((s) =>
+    editId ? s.bills.bills.find((b) => b.id === editId) : undefined,
+  );
+  const isEdit = Boolean(editId && existingBill);
 
   const isEstimate = type === "estimate";
   const isPurchase = type === "purchase";
@@ -60,9 +65,10 @@ export default function BillForm({ type }: { type: BillKind }) {
   const isSalesLike = type === "sales" || isReturn || isEstimate;
 
   const billNumber = useMemo(() => {
+    if (isEdit && existingBill) return existingBill.billNo || existingBill.id;
     const prefix = isEstimate ? "EST" : isPurchase ? "PUR" : isReturn ? "RET" : "INV";
     return `${prefix}-${String(billsCount + 1).padStart(5, "0")}`;
-  }, [billsCount, isEstimate, isPurchase, isReturn]);
+  }, [billsCount, isEstimate, isPurchase, isReturn, isEdit, existingBill]);
 
   // -------- Customer (sales/estimate/return) --------
   const [phone, setPhone] = useState("");
