@@ -414,7 +414,7 @@ export default function DebitNotePage() {
                                 <TextField {...p} placeholder="Search product…"
                                   onKeyDown={(e) => onRowKeyDown(e, idx)}
                                   slotProps={{
-                                    htmlInput: { ...(p.inputProps as any), "data-dn-product": "1" },
+                                    htmlInput: { ...((p as any).inputProps ?? {}), "data-dn-product": "1" },
                                   }} />
                               )}
                             />
