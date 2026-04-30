@@ -237,7 +237,13 @@ export default function BillForm({ type }: { type: BillKind }) {
     if (type === "sales") {
       for (const r of validRows) {
         const it = items.find((x) => x.id === r.itemId);
-        if (it && r.qty > it.stock) return notify(`${it.name}: only ${it.stock} in stock`, "error");
+        if (!it) continue;
+        // When editing, available stock = current + previously committed qty
+        const prevQty = isEdit && existingBill
+          ? existingBill.items.filter((x) => x.itemId === r.itemId).reduce((s, x) => s + x.qty, 0)
+          : 0;
+        const available = it.stock + prevQty;
+        if (r.qty > available) return notify(`${it.name}: only ${available} in stock`, "error");
       }
     }
     if (isEstimate && !expiry) return notify("Pick an expiry date", "warning");
@@ -245,9 +251,42 @@ export default function BillForm({ type }: { type: BillKind }) {
     const partyName = isPurchase ? dealer!.name : party!.name;
     const partyPhone = isPurchase ? dealer!.phone : party!.phone;
     const partyEmail = isPurchase ? dealer!.email : party!.email;
-    const dateIso = (isPurchase && billDate ? billDate : new Date()).toISOString();
+    const dateIso = isEdit && existingBill
+      ? existingBill.date
+      : (isPurchase && billDate ? billDate : new Date()).toISOString();
 
     const cleanItems: BillItem[] = validRows.map(({ _key, productInput, ...rest }) => rest);
+
+    if (isEdit && existingBill) {
+      const updated: Bill = {
+        ...existingBill,
+        date: dateIso,
+        partyName,
+        partyPhone,
+        partyEmail,
+        items: cleanItems,
+        paymentMode: isEstimate ? undefined : paymentMode,
+        notes: notes.trim() || undefined,
+      };
+      dispatch(updateBill(updated));
+
+      // Stock diff for sales: restore old qty, deduct new qty per item
+      if (existingBill.type === "sales") {
+        const prev: Record<string, number> = {};
+        existingBill.items.forEach((x) => { prev[x.itemId] = (prev[x.itemId] ?? 0) + x.qty; });
+        const next: Record<string, number> = {};
+        cleanItems.forEach((x) => { next[x.itemId] = (next[x.itemId] ?? 0) + x.qty; });
+        const ids = new Set([...Object.keys(prev), ...Object.keys(next)]);
+        ids.forEach((id) => {
+          const delta = (prev[id] ?? 0) - (next[id] ?? 0); // qty reduced => positive (add to stock)
+          if (delta !== 0) dispatch(adjustStock({ id, delta }));
+        });
+      }
+
+      notify("Bill updated", "success");
+      nav("/bills/sales");
+      return;
+    }
 
     const bill: Bill = {
       id: `${type[0]}-${Date.now()}`,
@@ -281,8 +320,7 @@ export default function BillForm({ type }: { type: BillKind }) {
     );
     nav(
       type === "purchase" ? "/bills/purchase" :
-      type === "return" ? "/bills/history" :
-      type === "estimate" ? "/bills/history" :
+      type === "estimate" ? "/bills/estimate" :
       "/bills/sales",
     );
   };
