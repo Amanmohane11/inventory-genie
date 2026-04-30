@@ -11,6 +11,10 @@ const billSlice = createSlice({
     addBill: (s, a: PayloadAction<Bill>) => {
       s.bills.unshift(a.payload);
     },
+    updateBill: (s, a: PayloadAction<Bill>) => {
+      const i = s.bills.findIndex((b) => b.id === a.payload.id);
+      if (i >= 0) s.bills[i] = a.payload;
+    },
     deleteBill: (s, a: PayloadAction<string>) => {
       s.bills = s.bills.filter((b) => b.id !== a.payload);
     },
@@ -30,6 +34,5 @@ const billSlice = createSlice({
   },
 });
 
-export const { addBill, deleteBill, convertEstimateToSale } = billSlice.actions;
+export const { addBill, updateBill, deleteBill, convertEstimateToSale } = billSlice.actions;
 export default billSlice.reducer;
-
