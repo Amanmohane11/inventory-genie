@@ -18,8 +18,10 @@ import {
 import { useNotify } from "@/components/NotifyProvider";
 
 const blankStaff: Staff = {
-  id: "", name: "", role: "", salary: 0, joinedAt: new Date().toISOString(),
-  phone: "", email: "", imageDataUrl: "",
+  id: "", name: "", role: "", salary: 0, perDaySalary: 0,
+  joinedAt: new Date().toISOString(),
+  phone: "", email: "", aadhaar: "", address: "", age: undefined, gender: undefined,
+  imageDataUrl: "",
 };
 
 export default function Payroll() {
