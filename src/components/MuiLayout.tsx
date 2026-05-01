@@ -149,6 +149,16 @@ export function MuiLayout({ children }: { children: ReactNode }) {
               <ListItemText primary="Welcome to Inventra" secondary="System ready" />
             </MenuItem>
           </Menu>
+          {user && (
+            <Chip
+              label={user.name}
+              size="small"
+              sx={{ display: { xs: "none", sm: "inline-flex" }, fontWeight: 600 }}
+            />
+          )}
+          <IconButton onClick={handleLogout} title="Sign out">
+            <LogoutIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
 
