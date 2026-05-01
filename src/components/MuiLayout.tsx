@@ -8,10 +8,11 @@ import {
   Menu as MenuIcon, Dashboard as DashboardIcon, People, Inventory2,
   ReceiptLong, AssignmentReturn, Assessment, Groups, Settings as SettingsIcon,
   ExpandLess, ExpandMore, ShoppingCart, ShoppingBag, History as HistoryIcon,
-  Notifications as NotificationsIcon, Description,
+  Notifications as NotificationsIcon, Description, Logout as LogoutIcon,
 } from "@mui/icons-material";
-import { NavLink, useLocation } from "react-router-dom";
-import { useAppSelector } from "@/store";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { logout } from "@/store/slices/authSlice";
 
 const DRAWER_WIDTH = 248;
 
@@ -43,7 +44,15 @@ export function MuiLayout({ children }: { children: ReactNode }) {
   const billsActive = pathname.startsWith("/bills");
   const [billsOpen, setBillsOpen] = useState(billsActive);
   const settings = useAppSelector((s) => s.settings);
+  const user = useAppSelector((s) => s.auth.user);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [notifAnchor, setNotifAnchor] = useState<HTMLElement | null>(null);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login", { replace: true });
+  };
 
   const drawer = (
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -140,6 +149,16 @@ export function MuiLayout({ children }: { children: ReactNode }) {
               <ListItemText primary="Welcome to Inventra" secondary="System ready" />
             </MenuItem>
           </Menu>
+          {user && (
+            <Chip
+              label={user.name}
+              size="small"
+              sx={{ display: { xs: "none", sm: "inline-flex" }, fontWeight: 600 }}
+            />
+          )}
+          <IconButton onClick={handleLogout} title="Sign out">
+            <LogoutIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
 

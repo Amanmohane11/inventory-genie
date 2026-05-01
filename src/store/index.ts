@@ -10,14 +10,15 @@ import parties from "./slices/partySlice";
 import debitNotes from "./slices/debitNoteSlice";
 import payroll from "./slices/payrollSlice";
 import settings from "./slices/settingsSlice";
+import auth from "./slices/authSlice";
 
-const rootReducer = combineReducers({ items, bills, expenses, parties, debitNotes, payroll, settings });
+const rootReducer = combineReducers({ items, bills, expenses, parties, debitNotes, payroll, settings, auth });
 
 const persistConfig = {
   key: "ims-root",
-  version: 2,
+  version: 3,
   storage,
-  whitelist: ["items", "bills", "expenses", "parties", "debitNotes", "payroll", "settings"],
+  whitelist: ["items", "bills", "expenses", "parties", "debitNotes", "payroll", "settings", "auth"],
 };
 
 const persisted = persistReducer(persistConfig, rootReducer);
