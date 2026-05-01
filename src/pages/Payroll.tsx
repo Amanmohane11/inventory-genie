@@ -348,8 +348,35 @@ export default function Payroll() {
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField fullWidth label="Email" value={sDraft.email} onChange={(e) => setSDraft({ ...sDraft, email: e.target.value })} />
               </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField fullWidth label="Aadhaar Number" value={sDraft.aadhaar ?? ""}
+                  onChange={(e) => setSDraft({ ...sDraft, aadhaar: e.target.value })} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField fullWidth type="number" label="Age" value={sDraft.age ?? ""}
+                  onChange={(e) => setSDraft({ ...sDraft, age: e.target.value ? +e.target.value : undefined })} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField select fullWidth label="Gender" value={sDraft.gender ?? ""}
+                  onChange={(e) => setSDraft({ ...sDraft, gender: (e.target.value || undefined) as Staff["gender"] })}>
+                  <MenuItem value="">—</MenuItem>
+                  <MenuItem value="male">Male</MenuItem>
+                  <MenuItem value="female">Female</MenuItem>
+                  <MenuItem value="other">Other</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField fullWidth type="number" label="Per Day Salary (₹)"
+                  value={sDraft.perDaySalary ?? 0}
+                  onChange={(e) => setSDraft({ ...sDraft, perDaySalary: +e.target.value })} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField fullWidth type="number" label="Monthly Salary (₹)" value={sDraft.salary}
+                  onChange={(e) => setSDraft({ ...sDraft, salary: +e.target.value })} />
+              </Grid>
               <Grid size={{ xs: 12 }}>
-                <TextField fullWidth type="number" label="Monthly Salary" value={sDraft.salary} onChange={(e) => setSDraft({ ...sDraft, salary: +e.target.value })} />
+                <TextField fullWidth multiline minRows={2} label="Address" value={sDraft.address ?? ""}
+                  onChange={(e) => setSDraft({ ...sDraft, address: e.target.value })} />
               </Grid>
             </Grid>
           </Stack>
