@@ -9,6 +9,7 @@ import {
   ReceiptLong, AssignmentReturn, Assessment, Groups, Settings as SettingsIcon,
   ExpandLess, ExpandMore, ShoppingCart, ShoppingBag, History as HistoryIcon,
   Notifications as NotificationsIcon, Description, Logout as LogoutIcon,
+  CardMembership, HelpOutline,
 } from "@mui/icons-material";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -33,6 +34,8 @@ const more = [
   { title: "Debit Note", url: "/debit-note", icon: <AssignmentReturn /> },
   { title: "Reports", url: "/reports", icon: <Assessment /> },
   { title: "Payroll", url: "/payroll", icon: <Groups /> },
+  { title: "Subscription", url: "/subscription", icon: <CardMembership /> },
+  { title: "Help & Support", url: "/support", icon: <HelpOutline /> },
   { title: "Settings", url: "/settings", icon: <SettingsIcon /> },
 ];
 
