@@ -44,7 +44,15 @@ export function MuiLayout({ children }: { children: ReactNode }) {
   const billsActive = pathname.startsWith("/bills");
   const [billsOpen, setBillsOpen] = useState(billsActive);
   const settings = useAppSelector((s) => s.settings);
+  const user = useAppSelector((s) => s.auth.user);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [notifAnchor, setNotifAnchor] = useState<HTMLElement | null>(null);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login", { replace: true });
+  };
 
   const drawer = (
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
