@@ -45,7 +45,7 @@ export default function Login() {
     }}>
       <Card sx={{ width: "100%", maxWidth: 420 }}>
         <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-          <Stack alignItems="center" spacing={1} sx={{ mb: 2 }}>
+          <Stack spacing={1} sx={{ mb: 2, alignItems: "center" }}>
             <Box sx={{
               width: 48, height: 48, borderRadius: 2, bgcolor: "primary.main",
               color: "primary.contrastText", display: "grid", placeItems: "center",
