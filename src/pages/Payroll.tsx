@@ -82,10 +82,13 @@ export default function Payroll() {
       const present = monthRecs.filter((r) => r.status === "present").length;
       const absent = monthRecs.filter((r) => r.status === "absent").length;
       const half = monthRecs.filter((r) => r.status === "half").length;
-      const perDay = st.salary / daysInMonth;
-      const deduction = absent * perDay + half * (perDay / 2);
-      const payable = Math.max(0, st.salary - deduction);
-      return { staff: st, present, absent, half, deduction, payable };
+      const perDay = st.perDaySalary && st.perDaySalary > 0 ? st.perDaySalary : st.salary / daysInMonth;
+      // Payable = (present full days × perDay) + (half days × perDay/2)
+      const earned = present * perDay + half * (perDay / 2);
+      // Cap by monthly salary
+      const payable = Math.min(st.salary || earned, earned > 0 ? earned : 0);
+      const deduction = Math.max(0, (st.salary || 0) - payable);
+      return { staff: st, present, absent, half, perDay, deduction, payable };
     });
   }, [staff, attendance, monthKey, daysInMonth]);
 
