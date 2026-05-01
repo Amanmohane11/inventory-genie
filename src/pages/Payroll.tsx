@@ -18,8 +18,10 @@ import {
 import { useNotify } from "@/components/NotifyProvider";
 
 const blankStaff: Staff = {
-  id: "", name: "", role: "", salary: 0, joinedAt: new Date().toISOString(),
-  phone: "", email: "", imageDataUrl: "",
+  id: "", name: "", role: "", salary: 0, perDaySalary: 0,
+  joinedAt: new Date().toISOString(),
+  phone: "", email: "", aadhaar: "", address: "", age: undefined, gender: undefined,
+  imageDataUrl: "",
 };
 
 export default function Payroll() {
@@ -80,10 +82,13 @@ export default function Payroll() {
       const present = monthRecs.filter((r) => r.status === "present").length;
       const absent = monthRecs.filter((r) => r.status === "absent").length;
       const half = monthRecs.filter((r) => r.status === "half").length;
-      const perDay = st.salary / daysInMonth;
-      const deduction = absent * perDay + half * (perDay / 2);
-      const payable = Math.max(0, st.salary - deduction);
-      return { staff: st, present, absent, half, deduction, payable };
+      const perDay = st.perDaySalary && st.perDaySalary > 0 ? st.perDaySalary : st.salary / daysInMonth;
+      // Payable = (present full days × perDay) + (half days × perDay/2)
+      const earned = present * perDay + half * (perDay / 2);
+      // Cap by monthly salary
+      const payable = Math.min(st.salary || earned, earned > 0 ? earned : 0);
+      const deduction = Math.max(0, (st.salary || 0) - payable);
+      return { staff: st, present, absent, half, perDay, deduction, payable };
     });
   }, [staff, attendance, monthKey, daysInMonth]);
 
@@ -343,8 +348,35 @@ export default function Payroll() {
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField fullWidth label="Email" value={sDraft.email} onChange={(e) => setSDraft({ ...sDraft, email: e.target.value })} />
               </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField fullWidth label="Aadhaar Number" value={sDraft.aadhaar ?? ""}
+                  onChange={(e) => setSDraft({ ...sDraft, aadhaar: e.target.value })} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField fullWidth type="number" label="Age" value={sDraft.age ?? ""}
+                  onChange={(e) => setSDraft({ ...sDraft, age: e.target.value ? +e.target.value : undefined })} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField select fullWidth label="Gender" value={sDraft.gender ?? ""}
+                  onChange={(e) => setSDraft({ ...sDraft, gender: (e.target.value || undefined) as Staff["gender"] })}>
+                  <MenuItem value="">—</MenuItem>
+                  <MenuItem value="male">Male</MenuItem>
+                  <MenuItem value="female">Female</MenuItem>
+                  <MenuItem value="other">Other</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField fullWidth type="number" label="Per Day Salary (₹)"
+                  value={sDraft.perDaySalary ?? 0}
+                  onChange={(e) => setSDraft({ ...sDraft, perDaySalary: +e.target.value })} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField fullWidth type="number" label="Monthly Salary (₹)" value={sDraft.salary}
+                  onChange={(e) => setSDraft({ ...sDraft, salary: +e.target.value })} />
+              </Grid>
               <Grid size={{ xs: 12 }}>
-                <TextField fullWidth type="number" label="Monthly Salary" value={sDraft.salary} onChange={(e) => setSDraft({ ...sDraft, salary: +e.target.value })} />
+                <TextField fullWidth multiline minRows={2} label="Address" value={sDraft.address ?? ""}
+                  onChange={(e) => setSDraft({ ...sDraft, address: e.target.value })} />
               </Grid>
             </Grid>
           </Stack>

@@ -20,7 +20,12 @@ import Reports from "./pages/Reports.tsx";
 import Payroll from "./pages/Payroll.tsx";
 import Settings from "./pages/Settings.tsx";
 import Login from "./pages/Login.tsx";
-import SuperAdminHome from "./pages/admin/SuperAdminHome.tsx";
+import Support from "./pages/Support.tsx";
+import ClientSubscription from "./pages/ClientSubscription.tsx";
+import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
+import ClientsAdmin from "./pages/admin/ClientsAdmin.tsx";
+import QueriesAdmin from "./pages/admin/QueriesAdmin.tsx";
+import SubscriptionAdmin from "./pages/admin/SubscriptionAdmin.tsx";
 
 const ClientOnly = ({ children }: { children: React.ReactNode }) => (
   <RequireAuth><RequireRole role="client_admin">{children}</RequireRole></RequireAuth>
@@ -41,7 +46,10 @@ const App = () => (
                 <Route path="/login" element={<RedirectIfAuthed><Login /></RedirectIfAuthed>} />
 
                 {/* Super Admin */}
-                <Route path="/admin" element={<SuperOnly><SuperAdminHome /></SuperOnly>} />
+                <Route path="/admin" element={<SuperOnly><AdminDashboard /></SuperOnly>} />
+                <Route path="/admin/clients" element={<SuperOnly><ClientsAdmin /></SuperOnly>} />
+                <Route path="/admin/queries" element={<SuperOnly><QueriesAdmin /></SuperOnly>} />
+                <Route path="/admin/subscription" element={<SuperOnly><SubscriptionAdmin /></SuperOnly>} />
 
                 {/* Client Admin */}
                 <Route path="/" element={<ClientOnly><Index /></ClientOnly>} />
@@ -58,6 +66,8 @@ const App = () => (
                 <Route path="/debit-note" element={<ClientOnly><DebitNote /></ClientOnly>} />
                 <Route path="/reports" element={<ClientOnly><Reports /></ClientOnly>} />
                 <Route path="/payroll" element={<ClientOnly><Payroll /></ClientOnly>} />
+                <Route path="/subscription" element={<ClientOnly><ClientSubscription /></ClientOnly>} />
+                <Route path="/support" element={<ClientOnly><Support /></ClientOnly>} />
                 <Route path="/settings" element={<ClientOnly><Settings /></ClientOnly>} />
 
                 <Route path="*" element={<NotFound />} />
