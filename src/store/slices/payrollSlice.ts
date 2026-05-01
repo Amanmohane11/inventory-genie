@@ -1,13 +1,20 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export type Gender = "male" | "female" | "other";
+
 export type Staff = {
   id: string;
   name: string;
   role: string;
-  salary: number;
+  salary: number;          // monthly salary
+  perDaySalary?: number;   // per-day rate (optional override)
   joinedAt: string;
   phone?: string;
   email?: string;
+  aadhaar?: string;
+  address?: string;
+  age?: number;
+  gender?: Gender;
   imageDataUrl?: string;
 };
 export type Payment = {
@@ -28,8 +35,16 @@ export type AttendanceRecord = {
 type State = { staff: Staff[]; payments: Payment[]; attendance: AttendanceRecord[] };
 const initialState: State = {
   staff: [
-    { id: "st1", name: "Rohan Kumar", role: "Cashier", salary: 18000, joinedAt: new Date().toISOString(), phone: "9000000010", email: "rohan@example.com" },
-    { id: "st2", name: "Sneha Patil", role: "Sales", salary: 22000, joinedAt: new Date().toISOString(), phone: "9000000011", email: "sneha@example.com" },
+    {
+      id: "st1", name: "Rohan Kumar", role: "Cashier", salary: 18000, perDaySalary: 600,
+      joinedAt: new Date().toISOString(), phone: "9000000010", email: "rohan@example.com",
+      aadhaar: "1234 5678 9012", address: "Kothrud, Pune", age: 24, gender: "male",
+    },
+    {
+      id: "st2", name: "Sneha Patil", role: "Sales", salary: 22000, perDaySalary: 750,
+      joinedAt: new Date().toISOString(), phone: "9000000011", email: "sneha@example.com",
+      aadhaar: "2345 6789 0123", address: "Baner, Pune", age: 27, gender: "female",
+    },
   ],
   payments: [],
   attendance: [],
