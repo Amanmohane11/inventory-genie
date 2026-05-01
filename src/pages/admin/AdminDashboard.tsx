@@ -4,7 +4,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableRow, TableContainer,
 } from "@mui/material";
 import {
-  Business, MonetizationOn, Verified, HourglassEmpty, ErrorOutlinedd,
+  Business, MonetizationOn, Verified, HourglassEmpty, ErrorOutlined,
 } from "@mui/icons-material";
 import { AdminLayout } from "@/components/AdminLayout";
 import { useAppSelector } from "@/store";
