@@ -8,10 +8,11 @@ import {
   Menu as MenuIcon, Dashboard as DashboardIcon, People, Inventory2,
   ReceiptLong, AssignmentReturn, Assessment, Groups, Settings as SettingsIcon,
   ExpandLess, ExpandMore, ShoppingCart, ShoppingBag, History as HistoryIcon,
-  Notifications as NotificationsIcon, Description,
+  Notifications as NotificationsIcon, Description, Logout as LogoutIcon,
 } from "@mui/icons-material";
-import { NavLink, useLocation } from "react-router-dom";
-import { useAppSelector } from "@/store";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { logout } from "@/store/slices/authSlice";
 
 const DRAWER_WIDTH = 248;
 
