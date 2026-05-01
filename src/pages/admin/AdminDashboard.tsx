@@ -4,7 +4,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableRow, TableContainer,
 } from "@mui/material";
 import {
-  Business, MonetizationOn, Verified, HourglassEmpty, ErrorOutlined,
+  Business, MonetizationOn, Verified, HourglassEmpty, ErrorOutlinedd,
 } from "@mui/icons-material";
 import { AdminLayout } from "@/components/AdminLayout";
 import { useAppSelector } from "@/store";
@@ -50,7 +50,7 @@ export default function AdminDashboard() {
           <KPI label="Total Businesses" value={String(clients.length)} icon={<Business />} color="primary" />
           <KPI label="Active" value={String(stats.active)} icon={<Verified />} color="success" />
           <KPI label="Trial" value={String(stats.trial)} icon={<HourglassEmpty />} color="warning" />
-          <KPI label="Inactive" value={String(stats.inactive)} icon={<ErrorOutline />} color="error" />
+          <KPI label="Inactive" value={String(stats.inactive)} icon={<ErrorOutlined />} color="error" />
         </Grid>
 
         <Grid container spacing={2}>
