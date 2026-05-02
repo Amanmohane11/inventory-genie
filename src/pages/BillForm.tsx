@@ -665,6 +665,9 @@ export default function BillForm({ type }: { type: BillKind }) {
                       <ToggleButton value="upi" sx={{ flex: 1 }}>UPI</ToggleButton>
                       <ToggleButton value="card" sx={{ flex: 1 }}>Card</ToggleButton>
                       <ToggleButton value="cash" sx={{ flex: 1 }}>Cash</ToggleButton>
+                      {type === "sales" && !isEdit && (
+                        <ToggleButton value="unpaid" sx={{ flex: 1 }}>Unpaid</ToggleButton>
+                      )}
                     </ToggleButtonGroup>
                   </Box>
                 )}
