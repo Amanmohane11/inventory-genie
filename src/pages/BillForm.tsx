@@ -280,7 +280,7 @@ export default function BillForm({ type }: { type: BillKind }) {
       };
       dispatch(updateBill(updated));
 
-      // Stock diff for sales: restore old qty, deduct new qty per item
+      // Stock diff for sales: restore old qty, deduct new qty
       if (existingBill.type === "sales") {
         const prev: Record<string, number> = {};
         existingBill.items.forEach((x) => { prev[x.itemId] = (prev[x.itemId] ?? 0) + x.qty; });
@@ -292,9 +292,21 @@ export default function BillForm({ type }: { type: BillKind }) {
           if (delta !== 0) dispatch(adjustStock({ id, delta }));
         });
       }
+      // Stock diff for purchase: increasing qty adds stock, decreasing removes
+      if (existingBill.type === "purchase") {
+        const prev: Record<string, number> = {};
+        existingBill.items.forEach((x) => { prev[x.itemId] = (prev[x.itemId] ?? 0) + x.qty; });
+        const next: Record<string, number> = {};
+        cleanItems.forEach((x) => { next[x.itemId] = (next[x.itemId] ?? 0) + x.qty; });
+        const ids = new Set([...Object.keys(prev), ...Object.keys(next)]);
+        ids.forEach((id) => {
+          const delta = (next[id] ?? 0) - (prev[id] ?? 0); // qty increased => add to stock
+          if (delta !== 0) dispatch(adjustStock({ id, delta }));
+        });
+      }
 
       notify("Bill updated", "success");
-      nav("/bills/sales");
+      nav(existingBill.type === "purchase" ? "/bills/purchase" : "/bills/sales");
       return;
     }
 
