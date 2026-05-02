@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { MuiLayout } from "@/components/MuiLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addBill, updateBill } from "@/store/slices/billSlice";
+import { addNote } from "@/store/slices/debitNoteSlice";
 import { adjustStock } from "@/store/slices/itemSlice";
 import { addCustomer } from "@/store/slices/partySlice";
 import { Bill, BillItem, Item } from "@/store/seedData";
@@ -54,6 +55,10 @@ export default function BillForm({ type }: { type: BillKind }) {
   const customers = useAppSelector((s) => s.parties.customers);
   const dealers = useAppSelector((s) => s.parties.dealers);
   const billsCount = useAppSelector((s) => s.bills.bills.length);
+  const billFields = useAppSelector((s) => s.settings.billFields) ?? {
+    productName: true, batch: true, hsn: true, expiry: true, mrp: true,
+    quantity: true, rate: true, discount: true, gst: true, total: true, free: true,
+  };
   const existingBill = useAppSelector((s) =>
     editId ? s.bills.bills.find((b) => b.id === editId) : undefined,
   );
@@ -122,7 +127,7 @@ export default function BillForm({ type }: { type: BillKind }) {
   // -------- Rows --------
   const [rows, setRows] = useState<Row[]>([newRow()]);
 
-  // Prefill when editing an existing bill
+  // Prefill when editing an existing bill (sales OR purchase)
   useEffect(() => {
     if (!isEdit || !existingBill) return;
     if (existingBill.partyPhone) setPhone(existingBill.partyPhone);
@@ -131,6 +136,16 @@ export default function BillForm({ type }: { type: BillKind }) {
       phone: existingBill.partyPhone ?? "",
       email: existingBill.partyEmail,
     });
+    if (existingBill.type === "purchase") {
+      // Hydrate dealer fields
+      const matched = dealers.find((d) => d.phone === existingBill.partyPhone) ?? null;
+      setDealer(matched ?? {
+        id: `dealer-${existingBill.id}`, name: existingBill.partyName,
+        phone: existingBill.partyPhone ?? "", email: existingBill.partyEmail ?? "",
+        company: existingBill.partyName,
+      } as any);
+      setBillNo(existingBill.billNo ?? existingBill.id);
+    }
     setRows(
       existingBill.items.map((bi) => ({
         ...bi,
@@ -221,7 +236,7 @@ export default function BillForm({ type }: { type: BillKind }) {
   }, [validRows]);
 
   const [notes, setNotes] = useState("");
-  const [paymentMode, setPaymentMode] = useState<"upi" | "card" | "cash">("upi");
+  const [paymentMode, setPaymentMode] = useState<"upi" | "card" | "cash" | "unpaid">("upi");
   const [expiry, setExpiry] = useState<Date | null>(null);
 
   // -------- Submit --------
@@ -258,6 +273,8 @@ export default function BillForm({ type }: { type: BillKind }) {
     const cleanItems: BillItem[] = validRows.map(({ _key, productInput, ...rest }) => rest);
 
     if (isEdit && existingBill) {
+      const pm: "upi" | "card" | "cash" | undefined =
+        isEstimate ? undefined : (paymentMode === "unpaid" ? "cash" : paymentMode);
       const updated: Bill = {
         ...existingBill,
         date: dateIso,
@@ -265,12 +282,12 @@ export default function BillForm({ type }: { type: BillKind }) {
         partyPhone,
         partyEmail,
         items: cleanItems,
-        paymentMode: isEstimate ? undefined : paymentMode,
+        paymentMode: pm,
         notes: notes.trim() || undefined,
       };
       dispatch(updateBill(updated));
 
-      // Stock diff for sales: restore old qty, deduct new qty per item
+      // Stock diff for sales: restore old qty, deduct new qty
       if (existingBill.type === "sales") {
         const prev: Record<string, number> = {};
         existingBill.items.forEach((x) => { prev[x.itemId] = (prev[x.itemId] ?? 0) + x.qty; });
@@ -282,12 +299,51 @@ export default function BillForm({ type }: { type: BillKind }) {
           if (delta !== 0) dispatch(adjustStock({ id, delta }));
         });
       }
+      // Stock diff for purchase: increasing qty adds stock, decreasing removes
+      if (existingBill.type === "purchase") {
+        const prev: Record<string, number> = {};
+        existingBill.items.forEach((x) => { prev[x.itemId] = (prev[x.itemId] ?? 0) + x.qty; });
+        const next: Record<string, number> = {};
+        cleanItems.forEach((x) => { next[x.itemId] = (next[x.itemId] ?? 0) + x.qty; });
+        const ids = new Set([...Object.keys(prev), ...Object.keys(next)]);
+        ids.forEach((id) => {
+          const delta = (next[id] ?? 0) - (prev[id] ?? 0); // qty increased => add to stock
+          if (delta !== 0) dispatch(adjustStock({ id, delta }));
+        });
+      }
 
       notify("Bill updated", "success");
-      nav("/bills/sales");
+      nav(existingBill.type === "purchase" ? "/bills/purchase" : "/bills/sales");
       return;
     }
 
+    // ---- Unpaid sales bills go straight into Debit Note module ----
+    if (type === "sales" && paymentMode === "unpaid") {
+      const dnItems = validRows.map((r) => ({
+        itemId: r.itemId, name: r.name, unit: r.unit ?? "pcs", mrp: r.mrp ?? 0,
+        qty: r.qty, rate: r.price, discount: r.discount, gstRate: r.gstRate,
+      }));
+      const note = {
+        id: `dn-${Date.now()}`,
+        noteNo: `DN-${String(Date.now()).slice(-5)}`,
+        date: dateIso,
+        dueDate: new Date(Date.now() + 7 * 86400000).toISOString(),
+        customerName: partyName,
+        customerPhone: partyPhone ?? "",
+        customerEmail: partyEmail,
+        items: dnItems,
+        notes: notes.trim() || undefined,
+        subtotal: totals.sub, gst: totals.gst, discount: totals.disc, total: totals.grand,
+        status: "open" as const,
+      };
+      dispatch(addNote(note));
+      notify("Unpaid bill saved → moved to Debit Note", "success");
+      nav("/debit-note");
+      return;
+    }
+
+    const pm: "upi" | "card" | "cash" | undefined =
+      isEstimate ? undefined : (paymentMode === "unpaid" ? "cash" : paymentMode);
     const bill: Bill = {
       id: `${type[0]}-${Date.now()}`,
       type,
@@ -296,7 +352,7 @@ export default function BillForm({ type }: { type: BillKind }) {
       partyPhone,
       partyEmail,
       items: cleanItems,
-      paymentMode: isEstimate ? undefined : paymentMode,
+      paymentMode: pm,
       paid: isEstimate ? false : true,
       notes: notes.trim() || undefined,
       expiryDate: isEstimate ? expiry?.toISOString() : undefined,
@@ -330,7 +386,7 @@ export default function BillForm({ type }: { type: BillKind }) {
     isReturn ? AssignmentReturn :
     ShoppingCart;
   const headerLabel =
-    isEdit ? "Edit Sales Bill" :
+    isEdit ? (existingBill?.type === "purchase" ? "Edit Purchase Bill" : "Edit Sales Bill") :
     isEstimate ? "Create Estimate Bill" :
     isPurchase ? "Create Purchase Bill" :
     isReturn ? "Create Return Sales Bill" :
@@ -508,18 +564,18 @@ export default function BillForm({ type }: { type: BillKind }) {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ minWidth: 200 }}>Product</TableCell>
-                  {isPurchase && <TableCell>HSN</TableCell>}
-                  {isPurchase && <TableCell>Batch</TableCell>}
-                  {isPurchase && <TableCell>Expiry</TableCell>}
+                  {billFields.productName && <TableCell sx={{ minWidth: 200 }}>Product</TableCell>}
+                  {isPurchase && billFields.hsn && <TableCell>HSN</TableCell>}
+                  {isPurchase && billFields.batch && <TableCell>Batch</TableCell>}
+                  {isPurchase && billFields.expiry && <TableCell>Expiry</TableCell>}
                   {!isPurchase && <TableCell>Unit</TableCell>}
-                  <TableCell align="right">MRP</TableCell>
-                  <TableCell align="right">Qty</TableCell>
-                  {isPurchase && <TableCell align="right">Free</TableCell>}
-                  <TableCell align="right">Rate</TableCell>
-                  <TableCell align="right">Disc</TableCell>
-                  <TableCell align="right">GST%</TableCell>
-                  <TableCell align="right">Total</TableCell>
+                  {billFields.mrp && <TableCell align="right">MRP</TableCell>}
+                  {billFields.quantity && <TableCell align="right">Qty</TableCell>}
+                  {isPurchase && billFields.free && <TableCell align="right">Free</TableCell>}
+                  {billFields.rate && <TableCell align="right">Rate</TableCell>}
+                  {billFields.discount && <TableCell align="right">Disc</TableCell>}
+                  {billFields.gst && <TableCell align="right">GST%</TableCell>}
+                  {billFields.total && <TableCell align="right">Total</TableCell>}
                   <TableCell />
                 </TableRow>
               </TableHead>
@@ -529,25 +585,27 @@ export default function BillForm({ type }: { type: BillKind }) {
                   const total = lineSub + (lineSub * r.gstRate) / 100;
                   return (
                     <TableRow key={r._key} hover onKeyDown={(e) => onRowKeyDown(e, idx)}>
-                      <TableCell sx={{ position: "relative" }}>
-                        <ProductPicker
-                          value={r.productInput}
-                          onTextChange={(v) => updateRow(idx, { productInput: v, ...(r.itemId ? { itemId: "", name: "" } : {}) })}
-                          onPick={(it) => pickProduct(idx, it)}
-                          options={filterItems(r.productInput)}
-                        />
-                      </TableCell>
-                      {isPurchase && (
+                      {billFields.productName && (
+                        <TableCell sx={{ position: "relative" }}>
+                          <ProductPicker
+                            value={r.productInput}
+                            onTextChange={(v) => updateRow(idx, { productInput: v, ...(r.itemId ? { itemId: "", name: "" } : {}) })}
+                            onPick={(it) => pickProduct(idx, it)}
+                            options={filterItems(r.productInput)}
+                          />
+                        </TableCell>
+                      )}
+                      {isPurchase && billFields.hsn && (
                         <TableCell>
                           <TextField size="small" value={r.hsn ?? ""} onChange={(e) => updateRow(idx, { hsn: e.target.value })} sx={{ width: 80 }} />
                         </TableCell>
                       )}
-                      {isPurchase && (
+                      {isPurchase && billFields.batch && (
                         <TableCell>
                           <TextField size="small" value={r.batchNo ?? ""} onChange={(e) => updateRow(idx, { batchNo: e.target.value })} sx={{ width: 90 }} />
                         </TableCell>
                       )}
-                      {isPurchase && (
+                      {isPurchase && billFields.expiry && (
                         <TableCell>
                           <TextField size="small" value={r.expiry ?? ""} onChange={(e) => updateRow(idx, { expiry: e.target.value })} placeholder="MM/YY" sx={{ width: 80 }} />
                         </TableCell>
@@ -555,33 +613,45 @@ export default function BillForm({ type }: { type: BillKind }) {
                       {!isPurchase && (
                         <TableCell>{r.unit ?? "pcs"}</TableCell>
                       )}
-                      <TableCell align="right">
-                        <TextField size="small" type="number" value={r.mrp ?? 0}
-                          onChange={(e) => updateRow(idx, { mrp: +e.target.value })} sx={{ width: 80 }} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <TextField size="small" type="number" value={r.qty}
-                          onChange={(e) => updateRow(idx, { qty: Math.max(0, +e.target.value) })} sx={{ width: 70 }} />
-                      </TableCell>
-                      {isPurchase && (
+                      {billFields.mrp && (
+                        <TableCell align="right">
+                          <TextField size="small" type="number" value={r.mrp ?? 0}
+                            onChange={(e) => updateRow(idx, { mrp: +e.target.value })} sx={{ width: 80 }} />
+                        </TableCell>
+                      )}
+                      {billFields.quantity && (
+                        <TableCell align="right">
+                          <TextField size="small" type="number" value={r.qty}
+                            onChange={(e) => updateRow(idx, { qty: Math.max(0, +e.target.value) })} sx={{ width: 70 }} />
+                        </TableCell>
+                      )}
+                      {isPurchase && billFields.free && (
                         <TableCell align="right">
                           <TextField size="small" type="number" value={r.free ?? 0}
                             onChange={(e) => updateRow(idx, { free: +e.target.value })} sx={{ width: 60 }} />
                         </TableCell>
                       )}
-                      <TableCell align="right">
-                        <TextField size="small" type="number" value={r.price}
-                          onChange={(e) => updateRow(idx, { price: +e.target.value })} sx={{ width: 90 }} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <TextField size="small" type="number" value={r.discount}
-                          onChange={(e) => updateRow(idx, { discount: +e.target.value })} sx={{ width: 70 }} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <TextField size="small" type="number" value={r.gstRate}
-                          onChange={(e) => updateRow(idx, { gstRate: +e.target.value })} sx={{ width: 60 }} />
-                      </TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 700 }}>₹{total.toFixed(2)}</TableCell>
+                      {billFields.rate && (
+                        <TableCell align="right">
+                          <TextField size="small" type="number" value={r.price}
+                            onChange={(e) => updateRow(idx, { price: +e.target.value })} sx={{ width: 90 }} />
+                        </TableCell>
+                      )}
+                      {billFields.discount && (
+                        <TableCell align="right">
+                          <TextField size="small" type="number" value={r.discount}
+                            onChange={(e) => updateRow(idx, { discount: +e.target.value })} sx={{ width: 70 }} />
+                        </TableCell>
+                      )}
+                      {billFields.gst && (
+                        <TableCell align="right">
+                          <TextField size="small" type="number" value={r.gstRate}
+                            onChange={(e) => updateRow(idx, { gstRate: +e.target.value })} sx={{ width: 60 }} />
+                        </TableCell>
+                      )}
+                      {billFields.total && (
+                        <TableCell align="right" sx={{ fontWeight: 700 }}>₹{total.toFixed(2)}</TableCell>
+                      )}
                       <TableCell align="right">
                         <IconButton size="small" color="error" onClick={() => removeRow(idx)}>
                           <Delete fontSize="small" />
@@ -613,6 +683,9 @@ export default function BillForm({ type }: { type: BillKind }) {
                       <ToggleButton value="upi" sx={{ flex: 1 }}>UPI</ToggleButton>
                       <ToggleButton value="card" sx={{ flex: 1 }}>Card</ToggleButton>
                       <ToggleButton value="cash" sx={{ flex: 1 }}>Cash</ToggleButton>
+                      {type === "sales" && !isEdit && (
+                        <ToggleButton value="unpaid" sx={{ flex: 1 }}>Unpaid</ToggleButton>
+                      )}
                     </ToggleButtonGroup>
                   </Box>
                 )}

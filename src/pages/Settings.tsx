@@ -1,12 +1,27 @@
 import { useState, useEffect } from "react";
 import {
-  Box, Button, Card, CardContent, Grid, Stack, TextField, Typography,
+  Box, Button, Card, CardContent, Grid, Stack, TextField, Typography, Switch,
+  FormControlLabel, Divider,
 } from "@mui/material";
 import { Save } from "@mui/icons-material";
 import { MuiLayout } from "@/components/MuiLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { updateSettings } from "@/store/slices/settingsSlice";
+import { updateSettings, setBillField, BillFieldKey, DEFAULT_BILL_FIELDS } from "@/store/slices/settingsSlice";
 import { useNotify } from "@/components/NotifyProvider";
+
+const FIELD_LABELS: { key: BillFieldKey; label: string }[] = [
+  { key: "productName", label: "Product Name" },
+  { key: "batch", label: "Batch" },
+  { key: "hsn", label: "HSN" },
+  { key: "expiry", label: "Expiry" },
+  { key: "mrp", label: "MRP" },
+  { key: "quantity", label: "Quantity" },
+  { key: "rate", label: "Rate" },
+  { key: "discount", label: "Discount" },
+  { key: "gst", label: "GST" },
+  { key: "total", label: "Total" },
+  { key: "free", label: "Free Qty" },
+];
 
 export default function Settings() {
   const settings = useAppSelector((s) => s.settings);
@@ -15,6 +30,8 @@ export default function Settings() {
   const [draft, setDraft] = useState(settings);
 
   useEffect(() => setDraft(settings), [settings]);
+
+  const fields = settings.billFields ?? DEFAULT_BILL_FIELDS;
 
   const save = () => {
     dispatch(updateSettings(draft));
@@ -27,7 +44,7 @@ export default function Settings() {
         sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, mb: 3 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>Settings</Typography>
-          <Typography variant="body2" color="text.secondary">Business info, tax and invoice customization</Typography>
+          <Typography variant="body2" color="text.secondary">Business info, tax and bill field control</Typography>
         </Box>
         <Button variant="contained" startIcon={<Save />} onClick={save}>Save</Button>
       </Stack>
@@ -59,6 +76,43 @@ export default function Settings() {
                 <TextField label="Currency" value={draft.currency} onChange={(e) => setDraft({ ...draft, currency: e.target.value })} />
                 <TextField label="Business Register ID" value={draft.businessRegisterId} onChange={(e) => setDraft({ ...draft, businessRegisterId: e.target.value })} />
               </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                Sales & Purchase Bill — Field Control
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 2 }}>
+                Toggle Yes/No to show or hide each field across the bill form and bill history.
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={1}>
+                {FIELD_LABELS.map((f) => (
+                  <Grid key={f.key} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={fields[f.key]}
+                          onChange={(_e, v) => dispatch(setBillField({ key: f.key, value: v }))}
+                          color="primary"
+                        />
+                      }
+                      label={
+                        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{f.label}</Typography>
+                          <Typography variant="caption" color={fields[f.key] ? "success.main" : "error.main"}>
+                            {fields[f.key] ? "Yes" : "No"}
+                          </Typography>
+                        </Stack>
+                      }
+                    />
+                  </Grid>
+                ))}
+              </Grid>
             </CardContent>
           </Card>
         </Grid>

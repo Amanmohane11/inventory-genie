@@ -2,14 +2,15 @@ import { useMemo, useState } from "react";
 import {
   Box, Card, CardContent, Grid, Stack, Typography, Button, Chip, IconButton,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem,
-  ToggleButtonGroup, ToggleButton, Avatar, Divider,
+  ToggleButtonGroup, ToggleButton, Avatar, Divider, FormControlLabel, Checkbox,
+  Accordion, AccordionSummary, AccordionDetails,
 } from "@mui/material";
-import { Add, Edit, Delete, Email, Phone, Place, Business as BusinessIcon } from "@mui/icons-material";
+import { Add, Edit, Delete, Email, Phone, Place, Business as BusinessIcon, ExpandMore } from "@mui/icons-material";
 import { AdminLayout } from "@/components/AdminLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   addClient, updateClient, deleteClient, ClientBusiness, getClientStatus,
-  assignSubscription,
+  assignSubscription, ALL_CLIENT_PAGES, ClientPageKey,
 } from "@/store/slices/clientsSlice";
 import { planDays } from "@/store/slices/subscriptionSlice";
 import { useNotify } from "@/components/NotifyProvider";
@@ -18,7 +19,9 @@ type Filter = "all" | "active" | "trial" | "inactive";
 
 const blank: ClientBusiness = {
   id: "", businessName: "", ownerName: "", email: "", phone: "",
+  altPhone: "", gstin: "", licenseNo: "", fssaiNo: "", password: "",
   address: "", category: "", trialDays: 14, createdAt: new Date().toISOString(),
+  allowedPages: undefined,
 };
 
 export default function ClientsAdmin() {

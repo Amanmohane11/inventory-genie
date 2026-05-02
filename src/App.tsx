@@ -62,6 +62,7 @@ const App = () => (
                 <Route path="/bills/estimate/new" element={<ClientOnly><BillForm type="estimate" /></ClientOnly>} />
                 <Route path="/bills/purchase" element={<ClientOnly><BillsList kind="purchase" /></ClientOnly>} />
                 <Route path="/bills/purchase/new" element={<ClientOnly><BillForm type="purchase" /></ClientOnly>} />
+                <Route path="/bills/purchase/:id/edit" element={<ClientOnly><BillForm type="purchase" /></ClientOnly>} />
                 <Route path="/bills/history" element={<ClientOnly><BillsHistory /></ClientOnly>} />
                 <Route path="/debit-note" element={<ClientOnly><DebitNote /></ClientOnly>} />
                 <Route path="/reports" element={<ClientOnly><Reports /></ClientOnly>} />
