@@ -37,6 +37,8 @@ export default function BillsList({ kind }: { kind: Kind }) {
 
   const filtered = useMemo(() => {
     let list = bills.filter((b) => b.type === kind);
+    // Sales tab shows ONLY paid bills
+    if (kind === "sales") list = list.filter((b) => b.paid);
     if (from && to) {
       list = list.filter((b) =>
         isWithinInterval(new Date(b.date), { start: startOfDay(from), end: endOfDay(to) }),
@@ -191,12 +193,12 @@ export default function BillsList({ kind }: { kind: Kind }) {
                         </Button>
                       </Tooltip>
                     )}
-                    {kind === "sales" && (
+                    {(kind === "sales" || kind === "purchase") && (
                       <Tooltip title="Edit bill">
                         <IconButton
                           size="small"
                           color="primary"
-                          onClick={() => nav(`/bills/sales/${b.id}/edit`)}
+                          onClick={() => nav(`/bills/${kind}/${b.id}/edit`)}
                         >
                           <Edit fontSize="small" />
                         </IconButton>
