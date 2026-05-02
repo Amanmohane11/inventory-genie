@@ -231,7 +231,7 @@ export default function BillForm({ type }: { type: BillKind }) {
   }, [validRows]);
 
   const [notes, setNotes] = useState("");
-  const [paymentMode, setPaymentMode] = useState<"upi" | "card" | "cash">("upi");
+  const [paymentMode, setPaymentMode] = useState<"upi" | "card" | "cash" | "unpaid">("upi");
   const [expiry, setExpiry] = useState<Date | null>(null);
 
   // -------- Submit --------
