@@ -22,7 +22,7 @@ const rootReducer = combineReducers({
 
 const persistConfig = {
   key: "ims-root",
-  version: 4,
+  version: 5,
   storage,
   whitelist: [
     "items", "bills", "expenses", "parties", "debitNotes", "payroll", "settings",
