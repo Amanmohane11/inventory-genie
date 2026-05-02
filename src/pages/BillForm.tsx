@@ -268,6 +268,8 @@ export default function BillForm({ type }: { type: BillKind }) {
     const cleanItems: BillItem[] = validRows.map(({ _key, productInput, ...rest }) => rest);
 
     if (isEdit && existingBill) {
+      const pm: "upi" | "card" | "cash" | undefined =
+        isEstimate ? undefined : (paymentMode === "unpaid" ? "cash" : paymentMode);
       const updated: Bill = {
         ...existingBill,
         date: dateIso,
@@ -275,7 +277,7 @@ export default function BillForm({ type }: { type: BillKind }) {
         partyPhone,
         partyEmail,
         items: cleanItems,
-        paymentMode: isEstimate ? undefined : paymentMode,
+        paymentMode: pm,
         notes: notes.trim() || undefined,
       };
       dispatch(updateBill(updated));
