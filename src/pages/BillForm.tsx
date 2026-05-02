@@ -352,7 +352,7 @@ export default function BillForm({ type }: { type: BillKind }) {
     isReturn ? AssignmentReturn :
     ShoppingCart;
   const headerLabel =
-    isEdit ? "Edit Sales Bill" :
+    isEdit ? (existingBill?.type === "purchase" ? "Edit Purchase Bill" : "Edit Sales Bill") :
     isEstimate ? "Create Estimate Bill" :
     isPurchase ? "Create Purchase Bill" :
     isReturn ? "Create Return Sales Bill" :
