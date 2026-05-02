@@ -312,6 +312,33 @@ export default function BillForm({ type }: { type: BillKind }) {
       return;
     }
 
+    // ---- Unpaid sales bills go straight into Debit Note module ----
+    if (type === "sales" && paymentMode === "unpaid") {
+      const dnItems = validRows.map((r) => ({
+        itemId: r.itemId, name: r.name, unit: r.unit ?? "pcs", mrp: r.mrp ?? 0,
+        qty: r.qty, rate: r.price, discount: r.discount, gstRate: r.gstRate,
+      }));
+      const note = {
+        id: `dn-${Date.now()}`,
+        noteNo: `DN-${String(Date.now()).slice(-5)}`,
+        date: dateIso,
+        dueDate: new Date(Date.now() + 7 * 86400000).toISOString(),
+        customerName: partyName,
+        customerPhone: partyPhone ?? "",
+        customerEmail: partyEmail,
+        items: dnItems,
+        notes: notes.trim() || undefined,
+        subtotal: totals.sub, gst: totals.gst, discount: totals.disc, total: totals.grand,
+        status: "open" as const,
+      };
+      dispatch(addNote(note));
+      notify("Unpaid bill saved → moved to Debit Note", "success");
+      nav("/debit-note");
+      return;
+    }
+
+    const pm: "upi" | "card" | "cash" | undefined =
+      isEstimate ? undefined : (paymentMode === "unpaid" ? "cash" : paymentMode);
     const bill: Bill = {
       id: `${type[0]}-${Date.now()}`,
       type,
@@ -320,7 +347,7 @@ export default function BillForm({ type }: { type: BillKind }) {
       partyPhone,
       partyEmail,
       items: cleanItems,
-      paymentMode: isEstimate ? undefined : paymentMode,
+      paymentMode: pm,
       paid: isEstimate ? false : true,
       notes: notes.trim() || undefined,
       expiryDate: isEstimate ? expiry?.toISOString() : undefined,
