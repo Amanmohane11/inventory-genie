@@ -564,18 +564,18 @@ export default function BillForm({ type }: { type: BillKind }) {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ minWidth: 200 }}>Product</TableCell>
-                  {isPurchase && <TableCell>HSN</TableCell>}
-                  {isPurchase && <TableCell>Batch</TableCell>}
-                  {isPurchase && <TableCell>Expiry</TableCell>}
+                  {billFields.productName && <TableCell sx={{ minWidth: 200 }}>Product</TableCell>}
+                  {isPurchase && billFields.hsn && <TableCell>HSN</TableCell>}
+                  {isPurchase && billFields.batch && <TableCell>Batch</TableCell>}
+                  {isPurchase && billFields.expiry && <TableCell>Expiry</TableCell>}
                   {!isPurchase && <TableCell>Unit</TableCell>}
-                  <TableCell align="right">MRP</TableCell>
-                  <TableCell align="right">Qty</TableCell>
-                  {isPurchase && <TableCell align="right">Free</TableCell>}
-                  <TableCell align="right">Rate</TableCell>
-                  <TableCell align="right">Disc</TableCell>
-                  <TableCell align="right">GST%</TableCell>
-                  <TableCell align="right">Total</TableCell>
+                  {billFields.mrp && <TableCell align="right">MRP</TableCell>}
+                  {billFields.quantity && <TableCell align="right">Qty</TableCell>}
+                  {isPurchase && billFields.free && <TableCell align="right">Free</TableCell>}
+                  {billFields.rate && <TableCell align="right">Rate</TableCell>}
+                  {billFields.discount && <TableCell align="right">Disc</TableCell>}
+                  {billFields.gst && <TableCell align="right">GST%</TableCell>}
+                  {billFields.total && <TableCell align="right">Total</TableCell>}
                   <TableCell />
                 </TableRow>
               </TableHead>
