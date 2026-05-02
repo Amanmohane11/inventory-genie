@@ -585,25 +585,27 @@ export default function BillForm({ type }: { type: BillKind }) {
                   const total = lineSub + (lineSub * r.gstRate) / 100;
                   return (
                     <TableRow key={r._key} hover onKeyDown={(e) => onRowKeyDown(e, idx)}>
-                      <TableCell sx={{ position: "relative" }}>
-                        <ProductPicker
-                          value={r.productInput}
-                          onTextChange={(v) => updateRow(idx, { productInput: v, ...(r.itemId ? { itemId: "", name: "" } : {}) })}
-                          onPick={(it) => pickProduct(idx, it)}
-                          options={filterItems(r.productInput)}
-                        />
-                      </TableCell>
-                      {isPurchase && (
+                      {billFields.productName && (
+                        <TableCell sx={{ position: "relative" }}>
+                          <ProductPicker
+                            value={r.productInput}
+                            onTextChange={(v) => updateRow(idx, { productInput: v, ...(r.itemId ? { itemId: "", name: "" } : {}) })}
+                            onPick={(it) => pickProduct(idx, it)}
+                            options={filterItems(r.productInput)}
+                          />
+                        </TableCell>
+                      )}
+                      {isPurchase && billFields.hsn && (
                         <TableCell>
                           <TextField size="small" value={r.hsn ?? ""} onChange={(e) => updateRow(idx, { hsn: e.target.value })} sx={{ width: 80 }} />
                         </TableCell>
                       )}
-                      {isPurchase && (
+                      {isPurchase && billFields.batch && (
                         <TableCell>
                           <TextField size="small" value={r.batchNo ?? ""} onChange={(e) => updateRow(idx, { batchNo: e.target.value })} sx={{ width: 90 }} />
                         </TableCell>
                       )}
-                      {isPurchase && (
+                      {isPurchase && billFields.expiry && (
                         <TableCell>
                           <TextField size="small" value={r.expiry ?? ""} onChange={(e) => updateRow(idx, { expiry: e.target.value })} placeholder="MM/YY" sx={{ width: 80 }} />
                         </TableCell>
@@ -611,33 +613,45 @@ export default function BillForm({ type }: { type: BillKind }) {
                       {!isPurchase && (
                         <TableCell>{r.unit ?? "pcs"}</TableCell>
                       )}
-                      <TableCell align="right">
-                        <TextField size="small" type="number" value={r.mrp ?? 0}
-                          onChange={(e) => updateRow(idx, { mrp: +e.target.value })} sx={{ width: 80 }} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <TextField size="small" type="number" value={r.qty}
-                          onChange={(e) => updateRow(idx, { qty: Math.max(0, +e.target.value) })} sx={{ width: 70 }} />
-                      </TableCell>
-                      {isPurchase && (
+                      {billFields.mrp && (
+                        <TableCell align="right">
+                          <TextField size="small" type="number" value={r.mrp ?? 0}
+                            onChange={(e) => updateRow(idx, { mrp: +e.target.value })} sx={{ width: 80 }} />
+                        </TableCell>
+                      )}
+                      {billFields.quantity && (
+                        <TableCell align="right">
+                          <TextField size="small" type="number" value={r.qty}
+                            onChange={(e) => updateRow(idx, { qty: Math.max(0, +e.target.value) })} sx={{ width: 70 }} />
+                        </TableCell>
+                      )}
+                      {isPurchase && billFields.free && (
                         <TableCell align="right">
                           <TextField size="small" type="number" value={r.free ?? 0}
                             onChange={(e) => updateRow(idx, { free: +e.target.value })} sx={{ width: 60 }} />
                         </TableCell>
                       )}
-                      <TableCell align="right">
-                        <TextField size="small" type="number" value={r.price}
-                          onChange={(e) => updateRow(idx, { price: +e.target.value })} sx={{ width: 90 }} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <TextField size="small" type="number" value={r.discount}
-                          onChange={(e) => updateRow(idx, { discount: +e.target.value })} sx={{ width: 70 }} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <TextField size="small" type="number" value={r.gstRate}
-                          onChange={(e) => updateRow(idx, { gstRate: +e.target.value })} sx={{ width: 60 }} />
-                      </TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 700 }}>₹{total.toFixed(2)}</TableCell>
+                      {billFields.rate && (
+                        <TableCell align="right">
+                          <TextField size="small" type="number" value={r.price}
+                            onChange={(e) => updateRow(idx, { price: +e.target.value })} sx={{ width: 90 }} />
+                        </TableCell>
+                      )}
+                      {billFields.discount && (
+                        <TableCell align="right">
+                          <TextField size="small" type="number" value={r.discount}
+                            onChange={(e) => updateRow(idx, { discount: +e.target.value })} sx={{ width: 70 }} />
+                        </TableCell>
+                      )}
+                      {billFields.gst && (
+                        <TableCell align="right">
+                          <TextField size="small" type="number" value={r.gstRate}
+                            onChange={(e) => updateRow(idx, { gstRate: +e.target.value })} sx={{ width: 60 }} />
+                        </TableCell>
+                      )}
+                      {billFields.total && (
+                        <TableCell align="right" sx={{ fontWeight: 700 }}>₹{total.toFixed(2)}</TableCell>
+                      )}
                       <TableCell align="right">
                         <IconButton size="small" color="error" onClick={() => removeRow(idx)}>
                           <Delete fontSize="small" />
