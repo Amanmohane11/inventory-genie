@@ -55,6 +55,10 @@ export default function BillForm({ type }: { type: BillKind }) {
   const customers = useAppSelector((s) => s.parties.customers);
   const dealers = useAppSelector((s) => s.parties.dealers);
   const billsCount = useAppSelector((s) => s.bills.bills.length);
+  const billFields = useAppSelector((s) => s.settings.billFields) ?? {
+    productName: true, batch: true, hsn: true, expiry: true, mrp: true,
+    quantity: true, rate: true, discount: true, gst: true, total: true, free: true,
+  };
   const existingBill = useAppSelector((s) =>
     editId ? s.bills.bills.find((b) => b.id === editId) : undefined,
   );
