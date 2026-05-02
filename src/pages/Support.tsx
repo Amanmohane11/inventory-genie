@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Box, Card, CardContent, Stack, Typography, TextField, Button, Grid, Divider,
-  Accordion, AccordionSummary, AccordionDetails, Alert,
+  Accordion, AccordionSummary, AccordionDetails, Alert, Chip,
 } from "@mui/material";
-import { ExpandMore, Send } from "@mui/icons-material";
+import { ExpandMore, Send, MarkEmailRead } from "@mui/icons-material";
 import { MuiLayout } from "@/components/MuiLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { addQuery } from "@/store/slices/supportSlice";
+import { addQuery, markNotified } from "@/store/slices/supportSlice";
 import { useNotify } from "@/components/NotifyProvider";
 
 export default function Support() {
@@ -15,8 +15,24 @@ export default function Support() {
   const settings = useAppSelector((s) => s.settings);
   const user = useAppSelector((s) => s.auth.user);
   const faqs = useAppSelector((s) => s.support.faqs);
+  const queries = useAppSelector((s) => s.support.queries);
   const [message, setMessage] = useState("");
   const [contact, setContact] = useState(user?.email ?? settings.email ?? "");
+
+  const myQueries = useMemo(
+    () => queries.filter((q) => q.businessName === settings.businessName),
+    [queries, settings.businessName],
+  );
+  const newAnswers = myQueries.filter((q) => q.answer && !q.notified);
+
+  // notify once per fresh response
+  useEffect(() => {
+    if (newAnswers.length > 0) {
+      notify(`You have ${newAnswers.length} new support response${newAnswers.length > 1 ? "s" : ""}`, "info");
+      newAnswers.forEach((q) => dispatch(markNotified(q.id)));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const submit = () => {
     if (!message.trim()) return notify("Please enter your query", "error");
@@ -37,30 +53,57 @@ export default function Support() {
       <Stack spacing={3}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>Help & Support</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Browse FAQs or send a question to our team
-          </Typography>
+          <Typography variant="body2" color="text.secondary">Browse FAQs, send queries and view responses</Typography>
         </Box>
+
+        {myQueries.length > 0 && (
+          <Card>
+            <CardContent>
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2 }}>
+                <MarkEmailRead color="primary" />
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Your Queries & Responses</Typography>
+              </Stack>
+              {myQueries.map((q) => (
+                <Accordion key={q.id} disableGutters>
+                  <AccordionSummary expandIcon={<ExpandMore />}>
+                    <Stack direction="row" spacing={1} sx={{ alignItems: "center", flex: 1 }}>
+                      <Typography sx={{ fontWeight: 600, flex: 1 }} noWrap>{q.message}</Typography>
+                      {q.answer
+                        ? <Chip size="small" color="success" label="Answered" />
+                        : <Chip size="small" color="warning" label="Pending" />}
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Typography variant="caption" color="text.secondary">Your message:</Typography>
+                    <Typography variant="body2" sx={{ mb: 1.5, whiteSpace: "pre-wrap" }}>{q.message}</Typography>
+                    {q.answer ? (
+                      <Alert severity="success" icon={<MarkEmailRead />}>
+                        <Typography variant="caption" sx={{ fontWeight: 700 }}>Response from Super Admin:</Typography>
+                        <Typography variant="body2" sx={{ mt: 0.5, whiteSpace: "pre-wrap" }}>{q.answer}</Typography>
+                      </Alert>
+                    ) : (
+                      <Alert severity="info">Awaiting response from our team.</Alert>
+                    )}
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: 7 }}>
             <Card>
               <CardContent>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-                  Frequently Asked Questions
-                </Typography>
-                {faqs.length === 0 && (
-                  <Alert severity="info">No FAQs published yet.</Alert>
-                )}
+                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Frequently Asked Questions</Typography>
+                {faqs.length === 0 && <Alert severity="info">No FAQs published yet.</Alert>}
                 {faqs.map((f) => (
                   <Accordion key={f.id} disableGutters>
                     <AccordionSummary expandIcon={<ExpandMore />}>
                       <Typography sx={{ fontWeight: 600 }}>{f.question}</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                      <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", color: "text.secondary" }}>
-                        {f.answer}
-                      </Typography>
+                      <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", color: "text.secondary" }}>{f.answer}</Typography>
                     </AccordionDetails>
                   </Accordion>
                 ))}
@@ -71,19 +114,14 @@ export default function Support() {
           <Grid size={{ xs: 12, md: 5 }}>
             <Card>
               <CardContent>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-                  Send a Query
-                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Send a Query</Typography>
                 <Stack spacing={2}>
                   <TextField label="Business" fullWidth value={settings.businessName} disabled />
-                  <TextField label="Contact (email or phone)" fullWidth value={contact}
-                    onChange={(e) => setContact(e.target.value)} />
+                  <TextField label="Contact" fullWidth value={contact} onChange={(e) => setContact(e.target.value)} />
                   <TextField label="Your message" fullWidth multiline minRows={5}
                     value={message} onChange={(e) => setMessage(e.target.value)} />
                   <Divider />
-                  <Button variant="contained" startIcon={<Send />} onClick={submit}>
-                    Send to Super Admin
-                  </Button>
+                  <Button variant="contained" startIcon={<Send />} onClick={submit}>Send to Super Admin</Button>
                 </Stack>
               </CardContent>
             </Card>
