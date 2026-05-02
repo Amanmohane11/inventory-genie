@@ -122,7 +122,7 @@ export default function BillForm({ type }: { type: BillKind }) {
   // -------- Rows --------
   const [rows, setRows] = useState<Row[]>([newRow()]);
 
-  // Prefill when editing an existing bill
+  // Prefill when editing an existing bill (sales OR purchase)
   useEffect(() => {
     if (!isEdit || !existingBill) return;
     if (existingBill.partyPhone) setPhone(existingBill.partyPhone);
@@ -131,6 +131,16 @@ export default function BillForm({ type }: { type: BillKind }) {
       phone: existingBill.partyPhone ?? "",
       email: existingBill.partyEmail,
     });
+    if (existingBill.type === "purchase") {
+      // Hydrate dealer fields
+      const matched = dealers.find((d) => d.phone === existingBill.partyPhone) ?? null;
+      setDealer(matched ?? {
+        id: `dealer-${existingBill.id}`, name: existingBill.partyName,
+        phone: existingBill.partyPhone ?? "", email: existingBill.partyEmail ?? "",
+        company: existingBill.partyName,
+      } as any);
+      setBillNo(existingBill.billNo ?? existingBill.id);
+    }
     setRows(
       existingBill.items.map((bi) => ({
         ...bi,
